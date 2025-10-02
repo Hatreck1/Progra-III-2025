@@ -8,7 +8,7 @@ try:
     cliente = MongoClient(
         f"mongodb+srv://{usuario}:{contrasena}@cluster0.n8op7pt.mongodb.net/?retryWrites=true&w=majority"
     )
-    db = cliente["Lizama_car"]  # Cambia "mi_base" por el nombre de tu base
+    db = cliente["Lizama_car"]  
     print("✅ Conexión exitosa a MongoDB Atlas")
 except Exception as e:
     print("❌ Error de conexión con MongoDB Atlas:", e)

@@ -1,0 +1,76 @@
+{% extends "base.html" %}
+
+{% block title %}Renta de Vehículos - Lizama Car{% endblock %}
+
+{% block content %}
+<h3>Vehículos Disponibles para Renta</h3>
+
+<!-- Buscador en tiempo real -->
+<div class="mb-4">
+  <input type="text" id="buscador" class="form-control" placeholder="Buscar por marca o modelo...">
+</div>
+
+<div class="row" id="vehiculosContainer">
+  {% for v in vehiculos %}
+  <div class="col-md-4 mb-4 vehiculo-card">
+    <div class="card h-100 shadow-sm text-center">
+      <img src="/{{ v.imagen }}" class="card-img-top" style="height:200px; object-fit:cover;">
+      <div class="card-body">
+        <h5 class="card-title">{{ v.marca }} {{ v.modelo }}</h5>
+        <p class="card-text">Año: {{ v.anio }} <br> Precio: ${{ v.precio }}</p>
+        <!-- Botón para abrir modal -->
+        <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#rentaModal{{ v._id }}">Rentar</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal para rentar -->
+  <div class="modal fade" id="rentaModal{{ v._id }}" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog">
+      <div class="modal-content">
+        <form method="POST" action="/renta/add/{{ v._id }}">
+          <div class="modal-header">
+            <h5 class="modal-title">Rentar {{ v.marca }} {{ v.modelo }}</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+          </div>
+          <div class="modal-body">
+            <div class="mb-3">
+              <label>Nombre del Cliente</label>
+              <input type="text" name="cliente_nombre" class="form-control" required>
+            </div>
+            <div class="mb-3">
+              <label>DUI del Cliente</label>
+              <input type="text" name="cliente_dui" class="form-control" required>
+            </div>
+          </div>
+          <div class="modal-footer">
+            <button type="submit" class="btn btn-success">Rentar</button>
+            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+  {% endfor %}
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+
+<script>
+  const buscador = document.getElementById('buscador');
+  const vehiculos = document.querySelectorAll('.vehiculo-card');
+
+  buscador.addEventListener('input', () => {
+    const texto = buscador.value.toLowerCase();
+    vehiculos.forEach(v => {
+      const marca = v.querySelector('.card-title').textContent.toLowerCase();
+      if (marca.includes(texto)) {
+        v.style.display = 'block';
+      } else {
+        v.style.display = 'none';
+      }
+    });
+  });
+</script>
+
+{% endblock %}

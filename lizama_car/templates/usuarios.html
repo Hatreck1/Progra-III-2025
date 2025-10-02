@@ -1,31 +1,105 @@
-<!DOCTYPE html>
-<html lang="es">
-<head>
-  <meta charset="UTF-8">
-  <title>Usuarios</title>
-  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
-</head>
-<body class="container mt-4">
-  <h3>Usuarios</h3>
-  <form method="POST" action="/usuarios/add" class="mb-3">
-    <input type="text" name="usuario" placeholder="Usuario" required>
-    <input type="password" name="password" placeholder="Contraseña" required>
-    <button type="submit" class="btn btn-primary">Agregar</button>
-  </form>
-  <table class="table">
+{% extends "base.html" %}
+
+{% block title %}Usuarios - Lizama Car{% endblock %}
+
+{% block content %}
+<h3>Usuarios</h3>
+
+<!-- Formulario para agregar usuario -->
+<form method="POST" action="/usuarios/add" class="mb-3 d-flex gap-2">
+  <input type="text" name="usuario" placeholder="Usuario" class="form-control" required>
+  <input type="password" name="password" placeholder="Contraseña" class="form-control" required>
+  <button type="submit" class="btn btn-primary">Agregar</button>
+</form>
+
+<!-- Input de búsqueda -->
+<div class="mb-3">
+  <input type="text" id="searchInput" class="form-control" placeholder="Buscar usuario...">
+</div>
+
+<!-- Tabla de usuarios -->
+<table class="table table-striped" id="usuariosTable">
+  <thead>
     <tr>
-      <th>Usuario</th><th>Rol</th><th>Fecha de Creación</th><th>Acciones</th>
+      <th>Usuario</th>
+      <th>Rol</th>
+      <th>Fecha de Creación</th>
+      <th>Acciones</th>
     </tr>
+  </thead>
+  <tbody>
     {% for u in usuarios %}
     <tr>
       <td>{{ u.username }}</td>
       <td>{{ u.rol }}</td>
       <td>{{ u.fecha_creacion.strftime('%Y-%m-%d %H:%M:%S') if u.fecha_creacion else '' }}</td>
       <td>
+        <button class="btn btn-warning btn-sm" 
+                data-bs-toggle="modal" 
+                data-bs-target="#editModal" 
+                data-id="{{ u._id }}" 
+                data-username="{{ u.username }}">
+          Editar
+        </button>
         <a href="/usuarios/delete/{{ u._id }}" class="btn btn-danger btn-sm">Eliminar</a>
       </td>
     </tr>
     {% endfor %}
-  </table>
-</body>
-</html>
+  </tbody>
+</table>
+
+<!-- Modal de edición -->
+<div class="modal fade" id="editModal" tabindex="-1" aria-labelledby="editModalLabel" aria-hidden="true">
+  <div class="modal-dialog">
+    <form method="POST" id="editForm">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" id="editModalLabel">Editar Usuario</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+        </div>
+        <div class="modal-body">
+          <input type="hidden" name="id" id="editId">
+          <div class="mb-3">
+            <label>Usuario</label>
+            <input type="text" name="usuario" id="editUsername" class="form-control" required>
+          </div>
+          <div class="mb-3">
+            <label>Nueva Contraseña (opcional)</label>
+            <input type="password" name="password" class="form-control" placeholder="Dejar vacío si no cambia">
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+          <button type="submit" class="btn btn-primary">Guardar Cambios</button>
+        </div>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- Scripts -->
+<script>
+  // Búsqueda interactiva
+  const searchInput = document.getElementById("searchInput");
+  const table = document.getElementById("usuariosTable").getElementsByTagName("tbody")[0];
+  searchInput.addEventListener("keyup", function() {
+    const filter = searchInput.value.toLowerCase();
+    const rows = table.getElementsByTagName("tr");
+    for (let i = 0; i < rows.length; i++) {
+      const username = rows[i].getElementsByTagName("td")[0].textContent.toLowerCase();
+      rows[i].style.display = username.includes(filter) ? "" : "none";
+    }
+  });
+
+  // Llenar modal con datos del usuario
+  var editModal = document.getElementById('editModal');
+  editModal.addEventListener('show.bs.modal', function (event) {
+    var button = event.relatedTarget;
+    var id = button.getAttribute('data-id');
+    var username = button.getAttribute('data-username');
+    document.getElementById('editId').value = id;
+    document.getElementById('editUsername').value = username;
+    document.getElementById('editForm').action = '/usuarios/edit/' + id;
+  });
+</script>
+{% endblock %}

@@ -1,25 +1,45 @@
-<!DOCTYPE html>
-<html lang="es">
-<head>
-  <meta charset="UTF-8">
-  <title>Ventas</title>
-  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
-</head>
-<body class="container mt-4">
-  <h3>Ventas</h3>
-  <table class="table">
+{% extends "base.html" %}
+
+{% block title %}Carros Rentados - Lizama Car{% endblock %}
+
+{% block content %}
+<h3>Carros Rentados</h3>
+
+<table class="table table-striped">
+  <thead>
     <tr>
-      <th>Marca</th><th>Modelo</th><th>Precio</th><th>Vendedor</th><th>Fecha</th>
+      <th>Imagen</th>
+      <th>Marca</th>
+      <th>Modelo</th>
+      <th>Precio</th>
+      <th>Cliente</th>
+      <th>DUI</th>
+      <th>Fecha de Renta</th>
+      <th>Acciones</th>
     </tr>
-    {% for v in ventas %}
+  </thead>
+  <tbody>
+    {% for r in rentados %}
     <tr>
-      <td>{{v.marca}}</td>
-      <td>{{v.modelo}}</td>
-      <td>{{v.precio}}</td>
-      <td>{{v.vendedor}}</td>
-      <td>{{v.fecha_venta}}</td>
+      <td>
+        {% if r.imagen %}
+          <img src="/{{ r.imagen }}" width="100" alt="Vehículo rentado">
+        {% else %}
+          N/A
+        {% endif %}
+      </td>
+      <td>{{ r.marca }}</td>
+      <td>{{ r.modelo }}</td>
+      <td>{{ r.precio }}</td>
+      <td>{{ r.cliente_nombre }}</td>
+      <td>{{ r.cliente_dui }}</td>
+      <td>{{ r.fecha_renta.strftime('%Y-%m-%d %H:%M:%S') if r.fecha_renta else '' }}</td>
+      <td>
+        <!-- Botón para devolver el carro -->
+        <a href="{{ url_for('devolver_carro', id=r._id) }}" class="btn btn-success btn-sm">Devolver</a>
+      </td>
     </tr>
     {% endfor %}
-  </table>
-</body>
-</html>
+  </tbody>
+</table>
+{% endblock %}

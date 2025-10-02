@@ -1,38 +1,300 @@
-from flask import Flask, render_template, request, redirect, url_for
+from flask import Flask, render_template, request, redirect, url_for, session
 from db_nexus import db
 from datetime import datetime
 from bson.objectid import ObjectId
 import bcrypt
 
-app = Flask(__name__)
-coleccion = db["Administradores"]
+from flask import make_response
 
-# Mostrar todos los usuarios
+# Decorador para proteger rutas y evitar cache
+def login_required(f):
+    from functools import wraps
+    @wraps(f)
+    def decorated_function(*args, **kwargs):
+        if "user" not in session:
+            return redirect(url_for("login"))
+        response = make_response(f(*args, **kwargs))
+        response.headers["Cache-Control"] = "no-cache, no-store, must-revalidate"
+        response.headers["Pragma"] = "no-cache"
+        response.headers["Expires"] = "0"
+        return response
+    return decorated_function
+
+
+app = Flask(__name__)
+app.secret_key = "tu_clave_secreta_aqui"  # necesario para sesiones
+
+coleccion_admin = db["Administradores"]
+coleccion_vehiculos = db["Vehiculos"]
+coleccion_ventas = db["Ventas"]
+
+# ------------------ LOGIN ------------------
+@app.route("/", methods=["GET", "POST"])
+def login():
+    if request.method == "POST":
+        usuario = request.form["usuario"]
+        password = request.form["password"].encode("utf-8")
+        admin = coleccion_admin.find_one({"username": usuario})
+        if admin and bcrypt.checkpw(password, admin["password"].encode("utf-8")):
+            session["user"] = admin["username"]
+            return redirect(url_for("dashboard"))
+        else:
+            return render_template("login.html", error="Usuario o contraseña incorrectos")
+    return render_template("login.html")
+
+# ------------------ REGISTRO ------------------
+@app.route("/register", methods=["GET", "POST"])
+def register():
+    if request.method == "POST":
+        nuevo_usuario = request.form["nuevo_usuario"]
+        nueva_password = request.form["nueva_password"].encode("utf-8")
+
+        if coleccion_admin.find_one({"username": nuevo_usuario}):
+            return render_template("register.html", error="Usuario ya existe")
+
+        hashed = bcrypt.hashpw(nueva_password, bcrypt.gensalt())
+        documento = {
+            "username": nuevo_usuario,
+            "password": hashed.decode("utf-8"),
+            "rol": "administrador",
+            "fecha_creacion": datetime.utcnow()
+        }
+        coleccion_admin.insert_one(documento)
+        return redirect(url_for("login"))
+
+    return render_template("register.html")
+
+# ------------------ LOGOUT ------------------
+@app.route("/logout")
+def logout():
+    session.pop("user", None)  # elimina la sesión
+    return redirect(url_for("login"))
+
+
+# ------------------ DASHBOARD ------------------
+@app.route("/dashboard")
+def dashboard():
+    if "user" not in session:
+        return redirect(url_for("login"))
+    return render_template("dashboard.html")
+
+# ------------------ USUARIOS ------------------
 @app.route("/usuarios")
 def mostrar_usuarios():
-    usuarios = list(coleccion.find({}, {"password": 0}))  # ocultamos la contraseña en la tabla
+    if "user" not in session:
+        return redirect(url_for("login"))
+    usuarios = list(coleccion_admin.find({}, {"password": 0}))
     return render_template("usuarios.html", usuarios=usuarios)
 
-# Agregar usuario
 @app.route("/usuarios/add", methods=["POST"])
 def agregar_usuario():
+    if "user" not in session:
+        return redirect(url_for("login"))
     username = request.form["usuario"]
     password = request.form["password"].encode("utf-8")
-    hashed = bcrypt.hashpw(password, bcrypt.gensalt())  # encripta la contraseña
+    hashed = bcrypt.hashpw(password, bcrypt.gensalt())
     documento = {
         "username": username,
         "password": hashed.decode("utf-8"),
         "rol": "administrador",
         "fecha_creacion": datetime.utcnow()
     }
-    coleccion.insert_one(documento)
+    coleccion_admin.insert_one(documento)
     return redirect(url_for("mostrar_usuarios"))
 
-# Eliminar usuario
-@app.route("/usuarios/delete/<id>", methods=["GET"])
+@app.route("/usuarios/delete/<id>")
 def eliminar_usuario(id):
-    coleccion.delete_one({"_id": ObjectId(id)})
+    if "user" not in session:
+        return redirect(url_for("login"))
+    coleccion_admin.delete_one({"_id": ObjectId(id)})
+    return redirect(url_for("mostrar_usuarios"))
+# ------------------ EDITAR USUARIOS ------------------
+@app.route("/usuarios/edit/<id>", methods=["POST"])
+@login_required
+def editar_usuario(id):
+    nuevo_usuario = request.form["usuario"]
+    nueva_password = request.form["password"]
+
+    update_data = {"username": nuevo_usuario}
+    if nueva_password:
+        hashed = bcrypt.hashpw(nueva_password.encode("utf-8"), bcrypt.gensalt())
+        update_data["password"] = hashed.decode("utf-8")
+
+    coleccion_admin.update_one({"_id": ObjectId(id)}, {"$set": update_data})
     return redirect(url_for("mostrar_usuarios"))
 
+
+# ------------------ VEHICULOS ------------------
+@app.route("/vehiculos")
+def mostrar_vehiculos():
+    if "user" not in session:
+        return redirect(url_for("login"))
+    vehiculos = list(coleccion_vehiculos.find())
+    return render_template("vehiculos.html", vehiculos=vehiculos)
+
+@app.route("/vehiculos/add", methods=["POST"])
+def agregar_vehiculo():
+    if "user" not in session:
+        return redirect(url_for("login"))
+    marca = request.form["marca"]
+    modelo = request.form["modelo"]
+    anio = request.form["anio"]
+    precio = request.form["precio"]
+    imagen = request.files["imagen"]
+    ruta_imagen = f"static/{imagen.filename}"
+    imagen.save(ruta_imagen)
+    documento = {
+        "marca": marca,
+        "modelo": modelo,
+        "anio": int(anio),
+        "precio": float(precio),
+        "imagen": ruta_imagen
+    }
+    coleccion_vehiculos.insert_one(documento)
+    return redirect(url_for("mostrar_vehiculos"))
+
+@app.route("/vehiculos/delete/<id>")
+def eliminar_vehiculo(id):
+    if "user" not in session:
+        return redirect(url_for("login"))
+    coleccion_vehiculos.delete_one({"_id": ObjectId(id)})
+    return redirect(url_for("mostrar_vehiculos"))
+
+@app.route("/vehiculos/vender/<id>")
+def vender_vehiculo(id):
+    if "user" not in session:
+        return redirect(url_for("login"))
+    vehiculo = coleccion_vehiculos.find_one({"_id": ObjectId(id)})
+    if vehiculo:
+        venta = {
+            "marca": vehiculo["marca"],
+            "modelo": vehiculo["modelo"],
+            "precio": vehiculo["precio"],
+            "imagen": vehiculo.get("imagen", ""),  # Guardamos la imagen también
+            "vendedor": session["user"],
+            "fecha_venta": datetime.utcnow()
+        }
+        coleccion_ventas.insert_one(venta)
+        coleccion_vehiculos.delete_one({"_id": ObjectId(id)})
+    return redirect(url_for("mostrar_vehiculos"))
+
+# ------------------ VENTAS ------------------
+@app.route("/ventas")
+def mostrar_ventas():
+    if "user" not in session:
+        return redirect(url_for("login"))
+    ventas = list(coleccion_ventas.find())
+    return render_template("ventas.html", ventas=ventas)
+
+coleccion_rentas = db["Rentas"]
+
+# ------------------ RENTAR VEHÍCULOS ------------------
+@app.route("/renta")
+def mostrar_renta():
+    if "user" not in session:
+        return redirect(url_for("login"))
+    # Vehículos disponibles = no vendidos y no rentados
+    vehiculos = list(coleccion_vehiculos.find({"rentado": {"$ne": True}}))
+    return render_template("renta.html", vehiculos=vehiculos)
+
+@app.route("/renta/add/<id>", methods=["POST"])
+def rentar_vehiculo(id):
+    if "user" not in session:
+        return redirect(url_for("login"))
+
+    cliente_nombre = request.form["cliente_nombre"]
+    cliente_dui = request.form["cliente_dui"]
+
+    vehiculo = coleccion_vehiculos.find_one({"_id": ObjectId(id)})
+    if vehiculo and not vehiculo.get("rentado", False):
+        # Guardamos la renta
+        renta = {
+            "vehiculo_id": vehiculo["_id"],
+            "marca": vehiculo["marca"],
+            "modelo": vehiculo["modelo"],
+            "anio": vehiculo["anio"],
+            "precio": vehiculo["precio"],
+            "imagen": vehiculo.get("imagen", ""),
+            "cliente_nombre": cliente_nombre,
+            "cliente_dui": cliente_dui,
+            "fecha_renta": datetime.utcnow(),
+            "rentado_por": session["user"]
+        }
+        coleccion_rentas.insert_one(renta)
+        # Marcamos el vehículo como rentado
+        coleccion_vehiculos.update_one({"_id": vehiculo["_id"]}, {"$set": {"rentado": True}})
+
+    return redirect(url_for("mostrar_renta"))
+
+@app.route("/rentados")
+def mostrar_rentados():
+    if "user" not in session:
+        return redirect(url_for("login"))
+    rentados = list(coleccion_rentas.find())
+    vehiculos_disponibles = list(coleccion_vehiculos.find({"rentado": {"$ne": True}}))
+    return render_template("rentados.html", rentados=rentados, vehiculos_disponibles=vehiculos_disponibles)
+
+
+@app.route("/rentados/devolver/<id>")
+def devolver_carro(id):
+    if "user" not in session:
+        return redirect(url_for("login"))
+    
+    renta = coleccion_rentas.find_one({"_id": ObjectId(id)})
+    if renta:
+        # Restauramos el vehículo como disponible
+        coleccion_vehiculos.update_one(
+            {"_id": renta["vehiculo_id"]},
+            {"$set": {"rentado": False}}
+        )
+        # Eliminamos la renta
+        coleccion_rentas.delete_one({"_id": ObjectId(id)})
+    
+    return redirect(url_for("mostrar_rentados"))
+
+@app.route("/rentados/editar/<id>", methods=["POST"])
+@login_required
+def editar_renta(id):
+    cliente_nombre = request.form["cliente_nombre"]
+    cliente_dui = request.form["cliente_dui"]
+
+    coleccion_rentas.update_one(
+        {"_id": ObjectId(id)},
+        {"$set": {
+            "cliente_nombre": cliente_nombre,
+            "cliente_dui": cliente_dui
+        }}
+    )
+    return redirect(url_for("mostrar_rentados"))
+
+@app.route("/rentados/rentar/<id>", methods=["POST"])
+@login_required
+def rentar_desde_rentados(id):
+    if "user" not in session:
+        return redirect(url_for("login"))
+
+    cliente_nombre = request.form["cliente_nombre"]
+    cliente_dui = request.form["cliente_dui"]
+
+    vehiculo = coleccion_vehiculos.find_one({"_id": ObjectId(id)})
+    if vehiculo and not vehiculo.get("rentado", False):
+        renta = {
+            "vehiculo_id": vehiculo["_id"],
+            "marca": vehiculo["marca"],
+            "modelo": vehiculo["modelo"],
+            "anio": vehiculo["anio"],
+            "precio": vehiculo["precio"],
+            "imagen": vehiculo.get("imagen", ""),
+            "cliente_nombre": cliente_nombre,
+            "cliente_dui": cliente_dui,
+            "fecha_renta": datetime.utcnow(),
+            "rentado_por": session["user"]
+        }
+        coleccion_rentas.insert_one(renta)
+        coleccion_vehiculos.update_one({"_id": vehiculo["_id"]}, {"$set": {"rentado": True}})
+
+    return redirect(url_for("mostrar_rentados"))
+
+# ------------------ RUN ------------------
 if __name__ == "__main__":
     app.run(debug=True)

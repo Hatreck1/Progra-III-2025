@@ -1,24 +1,33 @@
-<!DOCTYPE html>
-<html lang="es">
-<head>
-  <meta charset="UTF-8">
-  <title>Vehículos</title>
-  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
-</head>
-<body class="container mt-4">
-  <h3>Vehículos</h3>
-  <form method="POST" action="/vehiculos/add" enctype="multipart/form-data" class="mb-3">
-    <input type="text" name="marca" placeholder="Marca" required>
-    <input type="text" name="modelo" placeholder="Modelo" required>
-    <input type="number" name="anio" placeholder="Año" required>
-    <input type="number" name="precio" placeholder="Precio" required>
-    <input type="file" name="imagen" required>
-    <button type="submit" class="btn btn-primary">Agregar</button>
-  </form>
-  <table class="table">
+{% extends "base.html" %}
+
+{% block title %}Vehículos - Lizama Car{% endblock %}
+
+{% block content %}
+<h3 class="mb-4">Vehículos</h3>
+
+<!-- Botón para abrir modal de agregar vehículo -->
+<button class="btn btn-primary mb-3" data-bs-toggle="modal" data-bs-target="#addVehiculoModal">
+  <i class="bi bi-plus-circle"></i> Añadir Vehículo
+</button>
+
+<!-- Input de búsqueda -->
+<div class="mb-3">
+  <input type="text" id="searchInput" class="form-control" placeholder="Buscar vehículo por Marca o Modelo...">
+</div>
+
+<!-- Tabla de Vehículos -->
+<table class="table table-striped" id="vehiculosTable">
+  <thead>
     <tr>
-      <th>Marca</th><th>Modelo</th><th>Año</th><th>Precio</th><th>Imagen</th><th>Acciones</th>
+      <th>Marca</th>
+      <th>Modelo</th>
+      <th>Año</th>
+      <th>Precio</th>
+      <th>Imagen</th>
+      <th>Acciones</th>
     </tr>
+  </thead>
+  <tbody>
     {% for v in vehiculos %}
     <tr>
       <td>{{v.marca}}</td>
@@ -27,11 +36,71 @@
       <td>{{v.precio}}</td>
       <td><img src="/{{v.imagen}}" width="100"></td>
       <td>
-        <a href="/vehiculos/vender/{{v._id}}" class="btn btn-success btn-sm">Vender</a>
-        <a href="/vehiculos/delete/{{v._id}}" class="btn btn-danger btn-sm">Eliminar</a>
+        {% if not v.get('rentado', False) %}
+          <a href="/vehiculos/vender/{{v._id}}" class="btn btn-success btn-sm mb-1">Vender</a>
+        {% else %}
+          <button class="btn btn-secondary btn-sm mb-1" disabled>Rentado</button>
+        {% endif %}
+        <a href="/vehiculos/delete/{{v._id}}" class="btn btn-danger btn-sm mb-1">Eliminar</a>
       </td>
     </tr>
     {% endfor %}
-  </table>
-</body>
-</html>
+  </tbody>
+</table>
+
+<!-- Modal para agregar vehículo -->
+<div class="modal fade" id="addVehiculoModal" tabindex="-1" aria-labelledby="addVehiculoModalLabel" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <form method="POST" action="/vehiculos/add" enctype="multipart/form-data">
+        <div class="modal-header">
+          <h5 class="modal-title" id="addVehiculoModalLabel">Añadir Vehículo</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+        </div>
+        <div class="modal-body">
+          <div class="mb-3">
+            <input type="text" name="marca" placeholder="Marca" class="form-control" required>
+          </div>
+          <div class="mb-3">
+            <input type="text" name="modelo" placeholder="Modelo" class="form-control" required>
+          </div>
+          <div class="mb-3">
+            <input type="number" name="anio" placeholder="Año" class="form-control" required>
+          </div>
+          <div class="mb-3">
+            <input type="number" name="precio" placeholder="Precio" class="form-control" required>
+          </div>
+          <div class="mb-3">
+            <input type="file" name="imagen" class="form-control" required>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cerrar</button>
+          <button type="submit" class="btn btn-success">Agregar Vehículo</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<!-- Script de búsqueda -->
+<script>
+  const searchInput = document.getElementById("searchInput");
+  const table = document.getElementById("vehiculosTable").getElementsByTagName("tbody")[0];
+
+  searchInput.addEventListener("keyup", function() {
+    const filter = searchInput.value.toLowerCase();
+    const rows = table.getElementsByTagName("tr");
+
+    for (let i = 0; i < rows.length; i++) {
+      const marca = rows[i].getElementsByTagName("td")[0].textContent.toLowerCase();
+      const modelo = rows[i].getElementsByTagName("td")[1].textContent.toLowerCase();
+      if (marca.includes(filter) || modelo.includes(filter)) {
+        rows[i].style.display = "";
+      } else {
+        rows[i].style.display = "none";
+      }
+    }
+  });
+</script>
+{% endblock %}
