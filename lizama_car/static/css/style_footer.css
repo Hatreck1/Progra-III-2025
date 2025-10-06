@@ -1,0 +1,28 @@
+/* Ajuste general para sticky footer */
+html, body {
+  height: 100%;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+/* El contenido crece y empuja el footer abajo */
+.content {
+  flex: 1;
+}
+
+/* Footer */
+.footer-custom {
+  width: 100%;
+  bottom: 0;
+  left: 0;
+  background-color: #1b1a1a;
+  color: #ddd;
+  border-top: 2px solid #E43636;
+  font-family: 'Epilogue', sans-serif;
+}
+
+.footer-custom .footer-text {
+  font-size: 0.9rem;
+  color: #aaa;
+}

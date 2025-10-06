@@ -3,22 +3,42 @@
 {% block title %}Crear Cuenta - Lizama Car{% endblock %}
 
 {% block content %}
-<div class="row justify-content-center">
-  <div class="col-md-4">
-    <h3 class="text-center mb-3">Crear Cuenta</h3>
-    {% if error %}
-    <div class="alert alert-danger">{{ error }}</div>
-    {% endif %}
-    <form method="POST">
-      <div class="mb-3">
-        <input type="text" name="nuevo_usuario" class="form-control" placeholder="Nuevo Usuario" required>
+<div class="fondo_login"></div>
+
+<div class="d-flex justify-content-center align-items-center vh-100">
+  <div class="login-card shadow-lg border-0">
+    <!-- Imagen izquierda -->
+    <div class="img_login">
+      <img src="{{ url_for('static', filename='img/img_carro_red.jpg') }}" alt="carr_register">
+    </div>
+
+    <!-- Formulario derecha -->
+    <div class="cont_form_login p-5">
+      <img src="{{ url_for('static', filename='img/logo_color_trifuerza.svg') }}" alt="" class="img_logo_trifuerza">
+
+      <div class="cont_in_linea">
+        <h3 class="text-center text-success mb-4 lbl_inic_s">Crear Cuenta</h3>
       </div>
-      <div class="mb-3">
-        <input type="password" name="nueva_password" class="form-control" placeholder="Nueva Contraseña" required>
-      </div>
-      <button type="submit" class="btn btn-success w-100">Crear Cuenta</button>
-    </form>
-    <p class="text-center mt-2"><a href="/">Volver al login</a></p>
+
+      {% if error %}
+      <div class="alert alert-danger">{{ error }}</div>
+      {% endif %}
+
+      <form method="POST">
+        <div class="mb-3">
+          <input type="text" name="nuevo_usuario" class="form-control form-register" placeholder="Nuevo Usuario" required>
+        </div>
+        <div class="mb-3">
+          <input type="password" name="nueva_password" class="form-control form-register" placeholder="Nueva Contraseña" required>
+        </div>
+        <button type="submit" class="btn btn-success w-100 " id="btn-crearc">Crear Cuenta</button>
+      </form>
+
+      <hr>
+      <p class="text-center mt-2">       
+        <p class="text-center">¿Ya tienes cuenta con nosotros? <a href="/" class="a_redireccion_crear">Inicia sesión aquí</a></p>
+      </p>
+    </div>
   </div>
 </div>
 {% endblock %}

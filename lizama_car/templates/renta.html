@@ -3,22 +3,27 @@
 {% block title %}Renta de Vehículos - Lizama Car{% endblock %}
 
 {% block content %}
+
+
 <h3>Vehículos Disponibles para Renta</h3>
 
-<!-- Buscador en tiempo real -->
-<div class="mb-4">
-  <input type="text" id="buscador" class="form-control" placeholder="Buscar por marca o modelo...">
+<!-- Buscador -->
+<div class="mb-5" style="position: relative; max-width: 600px; margin: 0 auto;">
+  <input type="text" id="buscador" class="form-control" placeholder="Buscar por marca o modelo..." style="padding-left: 40px;">
+  <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" fill="#E43636" viewBox="0 0 256 256" style="position: absolute; left: 12px; top: 50%; transform: translateY(-50%);  font-size: 1.2rem;">
+    <path d="M168,112a56,56,0,1,1-56-56A56,56,0,0,1,168,112Zm61.66,117.66a8,8,0,0,1-11.32,0l-50.06-50.07a88,88,0,1,1,11.32-11.31l50.06,50.06A8,8,0,0,1,229.66,229.66ZM112,184a72,72,0,1,0-72-72A72.08,72.08,0,0,0,112,184Z"></path>
+  </svg>
 </div>
 
 <div class="row" id="vehiculosContainer">
   {% for v in vehiculos %}
   <div class="col-md-4 mb-4 vehiculo-card">
-    <div class="card h-100 shadow-sm text-center">
-      <img src="/{{ v.imagen }}" class="card-img-top" style="height:200px; object-fit:cover;">
+    <div class="card h-100 text-center">
+      <div class="blob"></div>
+      <img src="/{{ v.imagen }}" class="card-img-top">
       <div class="card-body">
         <h5 class="card-title">{{ v.marca }} {{ v.modelo }}</h5>
         <p class="card-text">Año: {{ v.anio }} <br> Precio: ${{ v.precio }}</p>
-        <!-- Botón para abrir modal -->
         <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#rentaModal{{ v._id }}">Rentar</button>
       </div>
     </div>
@@ -55,22 +60,16 @@
 </div>
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-
 <script>
-  const buscador = document.getElementById('buscador');
-  const vehiculos = document.querySelectorAll('.vehiculo-card');
+const buscador = document.getElementById('buscador');
+const vehiculos = document.querySelectorAll('.vehiculo-card');
 
-  buscador.addEventListener('input', () => {
-    const texto = buscador.value.toLowerCase();
-    vehiculos.forEach(v => {
-      const marca = v.querySelector('.card-title').textContent.toLowerCase();
-      if (marca.includes(texto)) {
-        v.style.display = 'block';
-      } else {
-        v.style.display = 'none';
-      }
-    });
+buscador.addEventListener('input', () => {
+  const texto = buscador.value.toLowerCase();
+  vehiculos.forEach(v => {
+    const marca = v.querySelector('.card-title').textContent.toLowerCase();
+    v.style.display = marca.includes(texto) ? 'block' : 'none';
   });
+});
 </script>
-
 {% endblock %}

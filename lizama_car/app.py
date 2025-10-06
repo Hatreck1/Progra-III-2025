@@ -39,8 +39,13 @@ def login():
             session["user"] = admin["username"]
             return redirect(url_for("dashboard"))
         else:
-            return render_template("login.html", error="Usuario o contraseña incorrectos")
-    return render_template("login.html")
+            return render_template(
+                "login.html",
+                error="Usuario o contraseña incorrectos",
+                hide_navbar=True
+            )
+    return render_template("login.html", hide_navbar=True)
+
 
 # ------------------ REGISTRO ------------------
 @app.route("/register", methods=["GET", "POST"])
@@ -62,7 +67,7 @@ def register():
         coleccion_admin.insert_one(documento)
         return redirect(url_for("login"))
 
-    return render_template("register.html")
+    return render_template("register.html", hide_navbar=True)
 
 # ------------------ LOGOUT ------------------
 @app.route("/logout")

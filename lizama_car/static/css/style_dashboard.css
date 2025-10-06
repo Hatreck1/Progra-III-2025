@@ -1,0 +1,71 @@
+
+.dashboard-container {
+  position: relative;
+  min-height: 100vh;
+  padding: 50px 20px;
+  overflow: hidden; /* evita scroll extra por la imagen */
+}
+
+  h2 {
+    color: #1b1a1a;
+    margin-bottom: 10px;
+    margin-top: 20px;
+  }
+
+  .dashboard-card {
+    background: rgba(255, 247, 247, 0.95);
+    border-radius: 20px;
+    padding: 20px;
+    margin: 15px 0;
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+    text-align: center;
+  }
+
+  .dashboard-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0px 10px 20px rgba(27, 26, 26, 0.2);
+  }
+
+  .dashboard-card h5 {
+    font-weight: 700;
+    color: #1b1a1a;
+  }
+
+  .dashboard-card p {
+    color: #555;
+    font-size: 0.95rem;
+  }
+
+  .dashboard-card .btn {
+    margin-top: 10px;
+    border-radius: 12px;
+    font-weight: 600;
+  }
+
+  .icon_car{
+    margin: auto 0; 
+    height: 60px; width: 60px; 
+    background-color: #feebeb; 
+    position: relative;
+    justify-content: center;
+    align-items: center;
+    border-radius: 20px;
+    margin: 0 auto;
+    margin-bottom: 10px;
+  }
+
+  .btn-red {
+    background-color: #E43636;
+    color: white;
+  }
+
+  .btn-red:hover {
+    background-color: #c22c2c;
+    color: white;
+  }
+
+  .btn-dark {
+    background-color: #1b1a1a;
+    color: #FFF7F7;
+  }
+

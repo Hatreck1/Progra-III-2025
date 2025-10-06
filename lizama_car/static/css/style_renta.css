@@ -1,0 +1,132 @@
+
+
+h3 {
+  text-align: center;
+  margin-bottom: 40px;
+  font-weight: 700;
+  font-size: 1.8rem;
+}
+
+#buscador {
+  width: 100%;
+  border: 2px solid #E43636;
+  border-radius: 12px;
+  padding: 12px 15px;
+  padding-left: 45px; /* espacio para el icono */
+  font-size: 1rem;
+  transition: box-shadow 0.3s ease, border-color 0.3s ease;
+}
+
+#buscador:focus {
+  outline: none;
+  border-color: #1b1a1a;
+  box-shadow: 0 0 10px rgba(228,54,54,0.5);
+}
+
+/* Cards contenedor */
+.vehiculo-card {
+  position: relative;
+}
+
+/* Card animada */
+.vehiculo-card .card {
+  position: relative;
+  overflow: hidden;
+  border-radius: 20px;
+  background: rgba(255, 247, 247, 0.95);
+  box-shadow: 15px 15px 40px rgba(0,0,0,0.05), -15px -15px 40px rgba(255,255,255,0.8);
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.vehiculo-card .card:hover {
+  transform: translateY(-8px);
+  box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+}
+
+/* Blob rojo difuminado */
+.vehiculo-card .blob {
+  position: absolute;
+  z-index: 1;
+  top: 50%;
+  left: 50%;
+  width: 180px;
+  height: 180px;
+  border-radius: 50%;
+  background-color: #f19696;
+  filter: blur(30px);
+  transform: translate(-50%, -50%);
+  opacity: 0.4;
+}
+
+/* Imagen del vehículo */
+.vehiculo-card img {
+  width: 100%;
+  height: 200px;
+  object-fit: cover;
+  border-top-left-radius: 20px;
+  border-top-right-radius: 20px;
+  z-index: 2;
+  position: relative;
+}
+
+/* Card body */
+.vehiculo-card .card-body {
+  position: relative;
+  z-index: 2;
+  padding: 20px;
+}
+
+.vehiculo-card h5 {
+  font-weight: 700;
+  color: #1b1a1a;
+  margin-bottom: 8px;
+}
+
+.vehiculo-card p {
+  color: #555;
+  font-size: 0.95rem;
+  margin-bottom: 15px;
+}
+
+/* Botones */
+.vehiculo-card .btn-primary {
+  background-color: #E43636;
+  border: none;
+  color: white;
+  font-weight: 600;
+  border-radius: 10px;
+  transition: background-color 0.2s ease, transform 0.2s ease;
+}
+
+.vehiculo-card .btn-primary:hover {
+  background-color: #c22c2c;
+  transform: translateY(-2px);
+}
+
+/* Modal */
+.modal-content {
+  border-radius: 15px;
+  border: none;
+}
+
+.modal-header, .modal-footer {
+  border: none;
+}
+
+.btn-success {
+  background-color: #E43636;
+  border: none;
+}
+
+.btn-success:hover {
+  background-color: #c22c2c;
+}
+
+.btn-secondary {
+  background-color: #1b1a1a;
+  color: #FFF7F7;
+}
+
+.btn-secondary:hover {
+  background-color: #333;
+}
