@@ -1,9 +1,9 @@
 {% extends "base.html" %}
 
-{% block title %}Carros Rentados - Lizama Car{% endblock %}
+{% block title %}Ventas - Lizama Car{% endblock %}
 
 {% block content %}
-<h3>Carros Rentados</h3>
+<h3>Vehículos Vendidos</h3>
 
 <table class="table table-striped">
   <thead>
@@ -12,34 +12,31 @@
       <th>Marca</th>
       <th>Modelo</th>
       <th>Precio</th>
-      <th>Cliente</th>
-      <th>DUI</th>
-      <th>Fecha de Renta</th>
-      <th>Acciones</th>
+      <th>Vendedor</th>
+      <th>Fecha de Venta</th>
     </tr>
   </thead>
   <tbody>
-    {% for r in rentados %}
+    {% for v in ventas %}
     <tr>
       <td>
-        {% if r.imagen %}
-          <img src="/{{ r.imagen }}" width="100" alt="Vehículo rentado">
+        {% if v.imagen %}
+          <img src="/{{ v.imagen }}" width="100" alt="Vehículo vendido">
         {% else %}
           N/A
         {% endif %}
       </td>
-      <td>{{ r.marca }}</td>
-      <td>{{ r.modelo }}</td>
-      <td>{{ r.precio }}</td>
-      <td>{{ r.cliente_nombre }}</td>
-      <td>{{ r.cliente_dui }}</td>
-      <td>{{ r.fecha_renta.strftime('%Y-%m-%d %H:%M:%S') if r.fecha_renta else '' }}</td>
-      <td>
-        <!-- Botón para devolver el carro -->
-        <a href="{{ url_for('devolver_carro', id=r._id) }}" class="btn btn-success btn-sm">Devolver</a>
-      </td>
+      <td>{{ v.marca }}</td>
+      <td>{{ v.modelo }}</td>
+      <td>${{ "%.2f"|format(v.precio) }}</td>
+      <td>{{ v.vendedor }}</td>
+      <td>{{ v.fecha_venta.strftime('%Y-%m-%d %H:%M:%S') if v.fecha_venta else '' }}</td>
     </tr>
     {% endfor %}
   </tbody>
 </table>
+
+{% if not ventas %}
+  <p class="text-center text-muted">No hay vehículos vendidos aún.</p>
+{% endif %}
 {% endblock %}
