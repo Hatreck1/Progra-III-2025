@@ -1,12 +1,11 @@
-from flask import Flask, render_template, request, redirect, url_for, session
+from flask import Flask, render_template, request, redirect, url_for, session, flash
 from db_nexus import db
 from datetime import datetime
 from bson.objectid import ObjectId
 import bcrypt
-
 from flask import make_response
 
-# Decorador para proteger rutas y evitar cache
+# =============== DECORADOR LOGIN ===============
 def login_required(f):
     from functools import wraps
     @wraps(f)
@@ -22,13 +21,14 @@ def login_required(f):
 
 
 app = Flask(__name__)
-app.secret_key = "tu_clave_secreta_aqui"  # necesario para sesiones
+app.secret_key = "tu_clave_secreta_aqui"
 
 coleccion_admin = db["Administradores"]
 coleccion_vehiculos = db["Vehiculos"]
 coleccion_ventas = db["Ventas"]
+coleccion_rentas = db["Rentas"]
 
-# ------------------ LOGIN ------------------
+# ==================== LOGIN ====================
 @app.route("/", methods=["GET", "POST"])
 def login():
     if request.method == "POST":
@@ -47,7 +47,7 @@ def login():
     return render_template("login.html", hide_navbar=True)
 
 
-# ------------------ REGISTRO ------------------
+# ==================== REGISTRO ====================
 @app.route("/register", methods=["GET", "POST"])
 def register():
     if request.method == "POST":
@@ -66,35 +66,33 @@ def register():
         }
         coleccion_admin.insert_one(documento)
         return redirect(url_for("login"))
-
     return render_template("register.html", hide_navbar=True)
 
-# ------------------ LOGOUT ------------------
+
+# ==================== LOGOUT ====================
 @app.route("/logout")
 def logout():
-    session.pop("user", None)  # elimina la sesión
+    session.pop("user", None)
     return redirect(url_for("login"))
 
 
-# ------------------ DASHBOARD ------------------
+# ==================== DASHBOARD ====================
 @app.route("/dashboard")
+@login_required
 def dashboard():
-    if "user" not in session:
-        return redirect(url_for("login"))
     return render_template("dashboard.html")
 
-# ------------------ USUARIOS ------------------
+
+# ==================== USUARIOS ====================
 @app.route("/usuarios")
+@login_required
 def mostrar_usuarios():
-    if "user" not in session:
-        return redirect(url_for("login"))
     usuarios = list(coleccion_admin.find({}, {"password": 0}))
     return render_template("usuarios.html", usuarios=usuarios)
 
 @app.route("/usuarios/add", methods=["POST"])
+@login_required
 def agregar_usuario():
-    if "user" not in session:
-        return redirect(url_for("login"))
     username = request.form["usuario"]
     password = request.form["password"].encode("utf-8")
     hashed = bcrypt.hashpw(password, bcrypt.gensalt())
@@ -108,39 +106,34 @@ def agregar_usuario():
     return redirect(url_for("mostrar_usuarios"))
 
 @app.route("/usuarios/delete/<id>")
+@login_required
 def eliminar_usuario(id):
-    if "user" not in session:
-        return redirect(url_for("login"))
     coleccion_admin.delete_one({"_id": ObjectId(id)})
     return redirect(url_for("mostrar_usuarios"))
-# ------------------ EDITAR USUARIOS ------------------
+
 @app.route("/usuarios/edit/<id>", methods=["POST"])
 @login_required
 def editar_usuario(id):
     nuevo_usuario = request.form["usuario"]
     nueva_password = request.form["password"]
-
     update_data = {"username": nuevo_usuario}
     if nueva_password:
         hashed = bcrypt.hashpw(nueva_password.encode("utf-8"), bcrypt.gensalt())
         update_data["password"] = hashed.decode("utf-8")
-
     coleccion_admin.update_one({"_id": ObjectId(id)}, {"$set": update_data})
     return redirect(url_for("mostrar_usuarios"))
 
 
-# ------------------ VEHICULOS ------------------
+# ==================== VEHÍCULOS ====================
 @app.route("/vehiculos")
+@login_required
 def mostrar_vehiculos():
-    if "user" not in session:
-        return redirect(url_for("login"))
     vehiculos = list(coleccion_vehiculos.find())
     return render_template("vehiculos.html", vehiculos=vehiculos)
 
 @app.route("/vehiculos/add", methods=["POST"])
+@login_required
 def agregar_vehiculo():
-    if "user" not in session:
-        return redirect(url_for("login"))
     marca = request.form["marca"]
     modelo = request.form["modelo"]
     anio = request.form["anio"]
@@ -148,34 +141,38 @@ def agregar_vehiculo():
     imagen = request.files["imagen"]
     ruta_imagen = f"static/{imagen.filename}"
     imagen.save(ruta_imagen)
+
     documento = {
         "marca": marca,
         "modelo": modelo,
         "anio": int(anio),
         "precio": float(precio),
-        "imagen": ruta_imagen
+        "imagen": ruta_imagen,
+        "rentado": False
     }
     coleccion_vehiculos.insert_one(documento)
     return redirect(url_for("mostrar_vehiculos"))
 
 @app.route("/vehiculos/delete/<id>")
+@login_required
 def eliminar_vehiculo(id):
-    if "user" not in session:
-        return redirect(url_for("login"))
-    coleccion_vehiculos.delete_one({"_id": ObjectId(id)})
+    vehiculo = coleccion_vehiculos.find_one({"_id": ObjectId(id)})
+    if vehiculo:
+        if vehiculo.get("rentado", False):
+            return redirect(url_for("mostrar_vehiculos"))
+        coleccion_vehiculos.delete_one({"_id": ObjectId(id)})
     return redirect(url_for("mostrar_vehiculos"))
 
 @app.route("/vehiculos/vender/<id>")
+@login_required
 def vender_vehiculo(id):
-    if "user" not in session:
-        return redirect(url_for("login"))
     vehiculo = coleccion_vehiculos.find_one({"_id": ObjectId(id)})
     if vehiculo:
         venta = {
             "marca": vehiculo["marca"],
             "modelo": vehiculo["modelo"],
             "precio": vehiculo["precio"],
-            "imagen": vehiculo.get("imagen", ""),  # Guardamos la imagen también
+            "imagen": vehiculo.get("imagen", ""),
             "vendedor": session["user"],
             "fecha_venta": datetime.utcnow()
         }
@@ -183,36 +180,29 @@ def vender_vehiculo(id):
         coleccion_vehiculos.delete_one({"_id": ObjectId(id)})
     return redirect(url_for("mostrar_vehiculos"))
 
-# ------------------ VENTAS ------------------
+
+# ==================== VENTAS ====================
 @app.route("/ventas")
+@login_required
 def mostrar_ventas():
-    if "user" not in session:
-        return redirect(url_for("login"))
     ventas = list(coleccion_ventas.find())
     return render_template("ventas.html", ventas=ventas)
 
-coleccion_rentas = db["Rentas"]
 
-# ------------------ RENTAR VEHÍCULOS ------------------
+# ==================== RENTAS ====================
 @app.route("/renta")
+@login_required
 def mostrar_renta():
-    if "user" not in session:
-        return redirect(url_for("login"))
-    # Vehículos disponibles = no vendidos y no rentados
     vehiculos = list(coleccion_vehiculos.find({"rentado": {"$ne": True}}))
     return render_template("renta.html", vehiculos=vehiculos)
 
 @app.route("/renta/add/<id>", methods=["POST"])
+@login_required
 def rentar_vehiculo(id):
-    if "user" not in session:
-        return redirect(url_for("login"))
-
     cliente_nombre = request.form["cliente_nombre"]
     cliente_dui = request.form["cliente_dui"]
-
     vehiculo = coleccion_vehiculos.find_one({"_id": ObjectId(id)})
     if vehiculo and not vehiculo.get("rentado", False):
-        # Guardamos la renta
         renta = {
             "vehiculo_id": vehiculo["_id"],
             "marca": vehiculo["marca"],
@@ -226,35 +216,25 @@ def rentar_vehiculo(id):
             "rentado_por": session["user"]
         }
         coleccion_rentas.insert_one(renta)
-        # Marcamos el vehículo como rentado
         coleccion_vehiculos.update_one({"_id": vehiculo["_id"]}, {"$set": {"rentado": True}})
-
+        flash("Vehículo rentado exitosamente.", "success")
     return redirect(url_for("mostrar_renta"))
 
 @app.route("/rentados")
+@login_required
 def mostrar_rentados():
-    if "user" not in session:
-        return redirect(url_for("login"))
     rentados = list(coleccion_rentas.find())
     vehiculos_disponibles = list(coleccion_vehiculos.find({"rentado": {"$ne": True}}))
     return render_template("rentados.html", rentados=rentados, vehiculos_disponibles=vehiculos_disponibles)
 
-
 @app.route("/rentados/devolver/<id>")
+@login_required
 def devolver_carro(id):
-    if "user" not in session:
-        return redirect(url_for("login"))
-    
     renta = coleccion_rentas.find_one({"_id": ObjectId(id)})
     if renta:
-        # Restauramos el vehículo como disponible
-        coleccion_vehiculos.update_one(
-            {"_id": renta["vehiculo_id"]},
-            {"$set": {"rentado": False}}
-        )
-        # Eliminamos la renta
+        coleccion_vehiculos.update_one({"_id": renta["vehiculo_id"]}, {"$set": {"rentado": False}})
         coleccion_rentas.delete_one({"_id": ObjectId(id)})
-    
+        flash("Vehículo devuelto correctamente.", "success")
     return redirect(url_for("mostrar_rentados"))
 
 @app.route("/rentados/editar/<id>", methods=["POST"])
@@ -262,44 +242,29 @@ def devolver_carro(id):
 def editar_renta(id):
     cliente_nombre = request.form["cliente_nombre"]
     cliente_dui = request.form["cliente_dui"]
-
-    coleccion_rentas.update_one(
-        {"_id": ObjectId(id)},
-        {"$set": {
-            "cliente_nombre": cliente_nombre,
-            "cliente_dui": cliente_dui
-        }}
-    )
+    coleccion_rentas.update_one({"_id": ObjectId(id)}, {"$set": {
+        "cliente_nombre": cliente_nombre,
+        "cliente_dui": cliente_dui
+    }})
+    flash("Renta editada correctamente.", "success")
     return redirect(url_for("mostrar_rentados"))
-
 @app.route("/rentados/rentar/<id>", methods=["POST"])
-@login_required
 def rentar_desde_rentados(id):
-    if "user" not in session:
-        return redirect(url_for("login"))
-
-    cliente_nombre = request.form["cliente_nombre"]
-    cliente_dui = request.form["cliente_dui"]
-
     vehiculo = coleccion_vehiculos.find_one({"_id": ObjectId(id)})
-    if vehiculo and not vehiculo.get("rentado", False):
-        renta = {
-            "vehiculo_id": vehiculo["_id"],
-            "marca": vehiculo["marca"],
-            "modelo": vehiculo["modelo"],
-            "anio": vehiculo["anio"],
-            "precio": vehiculo["precio"],
-            "imagen": vehiculo.get("imagen", ""),
-            "cliente_nombre": cliente_nombre,
-            "cliente_dui": cliente_dui,
-            "fecha_renta": datetime.utcnow(),
-            "rentado_por": session["user"]
-        }
-        coleccion_rentas.insert_one(renta)
-        coleccion_vehiculos.update_one({"_id": vehiculo["_id"]}, {"$set": {"rentado": True}})
+    if not vehiculo:
+        flash("Vehículo no encontrado.", "error")
+        return redirect(url_for("mostrar_rentados"))
 
+    # Marcar como rentado
+    coleccion_vehiculos.update_one(
+        {"_id": ObjectId(id)},
+        {"$set": {"rentado": True}}
+    )
+
+    flash(f"El vehículo {vehiculo['marca']} {vehiculo['modelo']} ha sido rentado.", "success")
     return redirect(url_for("mostrar_rentados"))
 
-# ------------------ RUN ------------------
+
+# ==================== RUN ====================
 if __name__ == "__main__":
     app.run(debug=True)

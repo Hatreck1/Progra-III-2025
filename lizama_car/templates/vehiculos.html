@@ -5,6 +5,20 @@
 {% block content %}
 <h3 class="mb-4">Vehículos</h3>
 
+<!-- Mostrar mensajes flash -->
+{% with messages = get_flashed_messages(with_categories=true) %}
+  {% if messages %}
+    <div class="container mb-3">
+      {% for category, message in messages %}
+        <div class="alert alert-{{ 'danger' if category == 'error' else category }} alert-dismissible fade show" role="alert">
+          {{ message }}
+          <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+      {% endfor %}
+    </div>
+  {% endif %}
+{% endwith %}
+
 <!-- Botón para abrir modal de agregar vehículo -->
 <button class="btn btn-primary mb-3" data-bs-toggle="modal" data-bs-target="#addVehiculoModal">
   <i class="bi bi-plus-circle"></i> Añadir Vehículo
@@ -13,11 +27,10 @@
 <!-- Input de búsqueda -->
 <div class="mb-3" style="position: relative; max-width: 600px; margin: 0 auto;">
   <input type="text" id="searchInput" class="form-control" placeholder="Buscar vehículo por Marca o Modelo..." style="padding-left: 45px;">
-      <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" fill="#E43636" viewBox="0 0 256 256" style="position: absolute; left: 12px; top: 50%; transform: translateY(-50%);  font-size: 1.2rem;">
-        <path d="M168,112a56,56,0,1,1-56-56A56,56,0,0,1,168,112Zm61.66,117.66a8,8,0,0,1-11.32,0l-50.06-50.07a88,88,0,1,1,11.32-11.31l50.06,50.06A8,8,0,0,1,229.66,229.66ZM112,184a72,72,0,1,0-72-72A72.08,72.08,0,0,0,112,184Z"></path>
-      </svg>
+  <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" fill="#E43636" viewBox="0 0 256 256" style="position: absolute; left: 12px; top: 50%; transform: translateY(-50%); font-size: 1.2rem;">
+    <path d="M168,112a56,56,0,1,1-56-56A56,56,0,0,1,168,112Zm61.66,117.66a8,8,0,0,1-11.32,0l-50.06-50.07a88,88,0,1,1,11.32-11.31l50.06,50.06A8,8,0,0,1,229.66,229.66ZM112,184a72,72,0,1,0-72-72A72.08,72.08,0,0,0,112,184Z"></path>
+  </svg>
 </div>
-
 
 <!-- Tabla de Vehículos -->
 <table class="table table-striped" id="vehiculosTable">
@@ -34,18 +47,19 @@
   <tbody>
     {% for v in vehiculos %}
     <tr>
-      <td>{{v.marca}}</td>
-      <td>{{v.modelo}}</td>
-      <td>{{v.anio}}</td>
-      <td>{{v.precio}}</td>
-      <td><img src="/{{v.imagen}}" width="100"></td>
+      <td>{{ v.marca }}</td>
+      <td>{{ v.modelo }}</td>
+      <td>{{ v.anio }}</td>
+      <td>${{ v.precio }}</td>
+      <td><img src="/{{ v.imagen }}" width="100"></td>
       <td>
         {% if not v.get('rentado', False) %}
-          <a href="/vehiculos/vender/{{v._id}}" class="btn btn-success btn-sm mb-1">Vender</a>
+          <a href="/vehiculos/vender/{{ v._id }}" class="btn btn-success btn-sm mb-1">Vender</a>
+          <a href="/vehiculos/delete/{{ v._id }}" class="btn btn-danger btn-sm mb-1">Eliminar</a>
         {% else %}
           <button class="btn btn-secondary btn-sm mb-1" disabled>Rentado</button>
+          <button class="btn btn-danger btn-sm mb-1" disabled>Eliminar</button>
         {% endif %}
-        <a href="/vehiculos/delete/{{v._id}}" class="btn btn-danger btn-sm mb-1">Eliminar</a>
       </td>
     </tr>
     {% endfor %}
@@ -107,4 +121,5 @@
     }
   });
 </script>
+
 {% endblock %}
