@@ -15,11 +15,16 @@ class crud:
         else:
             print("Error al conectar a la base de datos")
         
-    def consultar(self, sql):
+    # Ahora acepta valores opcionales
+    def consultar(self, sql, valores=None):
         cursor = self.conexion.cursor(dictionary=True)
-        cursor.execute(sql)
+        if valores:
+            cursor.execute(sql, valores)
+        else:
+            cursor.execute(sql)
         return cursor.fetchall()
     
+    # Ejecutar con parámetros
     def ejecutar(self, sql, datos):
         try:
             cursor = self.conexion.cursor()
