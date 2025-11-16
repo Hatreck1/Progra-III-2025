@@ -120,6 +120,7 @@
           <th>Precio Venta</th>
           <th>Vendedor</th>
           <th>DUI</th>
+          <th>Comprado por</th>
           <th>Fecha Compra</th>
         </tr>
       </thead>
@@ -143,6 +144,7 @@
             <td>${{ "%.2f"|format(c.precio) }}</td>
             <td>{{ c.vendedor_nombre }}</td>
             <td>{{ c.vendedor_dui }}</td>
+            <td>{{ c.registrado_por }}</td>
             <td>{{ c.fecha_compra.strftime("%d/%m/%Y") if c.fecha_compra else '' }}</td>
           </tr>
           {% endfor %}
