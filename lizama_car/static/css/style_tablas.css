@@ -121,7 +121,7 @@ h3 {
 
 .table thead {
   background-color: #E43636;
-  color: #FFF7F7;
+  color: #FFF7F7 !important;
   font-weight: 600;
   text-transform: uppercase;
 }
@@ -131,6 +131,7 @@ h3 {
   text-align: center;
   letter-spacing: 0.5px;
   font-size: 0.95rem;
+  background-color: #f9eca3;
 }
 
 .table tbody tr {
@@ -197,4 +198,8 @@ h3 {
   .card-body {
     padding: 15px;
   }
+}
+
+#searchInput{
+  width: 400px;
 }

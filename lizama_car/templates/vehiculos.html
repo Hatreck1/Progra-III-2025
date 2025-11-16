@@ -1,125 +1,203 @@
 {% extends "base.html" %}
-
 {% block title %}Vehículos - Lizama Car{% endblock %}
 
 {% block content %}
-<h3 class="mb-4">Vehículos</h3>
+<h3 class="mb-5 text-center text-uppercase fw-bold" style="color:#E43636;">
+  <i class="bi bi-car-front-fill"></i> Vehículos
+</h3>
 
-<!-- Mostrar mensajes flash -->
 {% with messages = get_flashed_messages(with_categories=true) %}
   {% if messages %}
     <div class="container mb-3">
       {% for category, message in messages %}
         <div class="alert alert-{{ 'danger' if category == 'error' else category }} alert-dismissible fade show" role="alert">
           {{ message }}
-          <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+          <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
         </div>
       {% endfor %}
     </div>
   {% endif %}
 {% endwith %}
 
-<!-- Botón para abrir modal de agregar vehículo -->
-<button class="btn btn-primary mb-3" data-bs-toggle="modal" data-bs-target="#addVehiculoModal">
-  <i class="bi bi-plus-circle"></i> Añadir Vehículo
-</button>
+<div class="d-flex justify-content-between align-items-center mb-4">
+  <button class="btn btn-danger shadow" data-bs-toggle="modal" data-bs-target="#addVehiculoModal">
+    <i class="bi bi-plus-circle"></i> Añadir Vehículo
+  </button>
 
-<!-- Input de búsqueda -->
-<div class="mb-3" style="position: relative; max-width: 600px; margin: 0 auto;">
-  <input type="text" id="searchInput" class="form-control" placeholder="Buscar vehículo por Marca o Modelo..." style="padding-left: 45px;">
-  <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" fill="#E43636" viewBox="0 0 256 256" style="position: absolute; left: 12px; top: 50%; transform: translateY(-50%); font-size: 1.2rem;">
-    <path d="M168,112a56,56,0,1,1-56-56A56,56,0,0,1,168,112Zm61.66,117.66a8,8,0,0,1-11.32,0l-50.06-50.07a88,88,0,1,1,11.32-11.31l50.06,50.06A8,8,0,0,1,229.66,229.66ZM112,184a72,72,0,1,0-72-72A72.08,72.08,0,0,0,112,184Z"></path>
-  </svg>
+  <div class="position-relative" style="max-width: 400px;">
+    <input type="text" id="searchInput" class="form-control ps-5" placeholder="Buscar por marca o modelo...">
+    <i class="bi bi-search" style="position:absolute; top:50%; left:15px; transform:translateY(-50%); color:#E43636;"></i>
+  </div>
 </div>
 
-<!-- Tabla de Vehículos -->
-<table class="table table-striped" id="vehiculosTable">
-  <thead>
-    <tr>
-      <th>Marca</th>
-      <th>Modelo</th>
-      <th>Año</th>
-      <th>Precio</th>
-      <th>Imagen</th>
-      <th>Acciones</th>
-    </tr>
-  </thead>
-  <tbody>
-    {% for v in vehiculos %}
-    <tr>
-      <td>{{ v.marca }}</td>
-      <td>{{ v.modelo }}</td>
-      <td>{{ v.anio }}</td>
-      <td>${{ v.precio }}</td>
-      <td><img src="/{{ v.imagen }}" width="100"></td>
-      <td>
-        {% if not v.get('rentado', False) %}
-          <a href="/vehiculos/vender/{{ v._id }}" class="btn btn-success btn-sm mb-1">Vender</a>
-          <a href="/vehiculos/delete/{{ v._id }}" class="btn btn-danger btn-sm mb-1">Eliminar</a>
-        {% else %}
-          <button class="btn btn-secondary btn-sm mb-1" disabled>Rentado</button>
-          <button class="btn btn-danger btn-sm mb-1" disabled>Eliminar</button>
-        {% endif %}
-      </td>
-    </tr>
-    {% endfor %}
-  </tbody>
-</table>
-
-<!-- Modal para agregar vehículo -->
+<div class="table-responsive shadow rounded">
+  <table class="table table-hover align-middle text-center">
+    <thead class="table-danger text-uppercase">
+      <tr>
+        <th>Marca</th>
+        <th>Modelo</th>
+        <th>Año</th>
+        <th>Color</th>
+        <th>Tipo</th>
+        <th>Transmisión</th>
+        <th>Combustible</th>
+        <th>Kilometraje</th>
+        <th>Precio Compra</th>
+        <th>Precio Venta</th>
+        <th>Imagen</th>
+        <th>Acciones</th>
+      </tr>
+    </thead>
+    <tbody id="vehiculosTable">
+      {% for v in vehiculos %}
+      <tr>
+        <td>{{ v.marca }}</td>
+        <td>{{ v.modelo }}</td>
+        <td>{{ v.anio }}</td>
+        <td>{{ v.color }}</td>
+        <td>{{ v.tipo }}</td>
+        <td>{{ v.transmision }}</td>
+        <td>{{ v.combustible }}</td>
+        <td>{{ v.kilometraje }}</td>
+        <td>${{ v.precio_compra }}</td>
+        <td>${{ v.precio }}</td>
+        <td>
+          {% if v.imagen %}
+            <img src="/{{ v.imagen }}" alt="vehículo" class="img-thumbnail rounded" style="width:100px; height:70px; object-fit:cover;">
+          {% else %}
+            <span class="text-muted">Sin imagen</span>
+          {% endif %}
+        </td>
+        <td>
+          {% if not v.get('rentado', False) %}
+            <a href="/vehiculos/vender/{{ v._id }}" class="btn btn-success btn-sm mb-1"><i class="bi bi-cash-stack"></i> Vender</a>
+            <a href="/vehiculos/delete/{{ v._id }}" class="btn btn-outline-danger btn-sm mb-1"><i class="bi bi-trash"></i> Eliminar</a>
+          {% else %}
+            <button class="btn btn-secondary btn-sm mb-1" disabled>Rentado</button>
+            <button class="btn btn-danger btn-sm mb-1" disabled>Eliminar</button>
+          {% endif %}
+        </td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+<!-- Modal Añadir Vehículo -->
 <div class="modal fade" id="addVehiculoModal" tabindex="-1" aria-labelledby="addVehiculoModalLabel" aria-hidden="true">
-  <div class="modal-dialog">
-    <div class="modal-content">
-      <form method="POST" action="/vehiculos/add" enctype="multipart/form-data">
-        <div class="modal-header">
-          <h5 class="modal-title" id="addVehiculoModalLabel">Añadir Vehículo</h5>
-          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+  <div class="modal-dialog modal-lg modal-dialog-centered">
+    <div class="modal-content border-0 shadow-lg" style="border-radius:15px;">
+      <div class="modal-header bg-danger text-white">
+        <h5 class="modal-title fw-bold">
+          <i class="bi bi-plus-circle"></i> Añadir Vehículo
+        </h5>
+        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+      </div>
+
+      <!-- ✅ Acción correcta: apunta a /vehiculos/add -->
+      <form method="POST" action="/vehiculos/add" enctype="multipart/form-data" id="formVehiculo">
+        <div class="modal-body p-4">
+          <div class="row g-3">
+            <div class="col-md-4">
+              <label class="form-label fw-bold">Marca</label>
+              <input type="text" name="marca" class="form-control" required>
+            </div>
+            <div class="col-md-4">
+              <label class="form-label fw-bold">Modelo</label>
+              <input type="text" name="modelo" class="form-control" required>
+            </div>
+            <div class="col-md-4">
+              <label class="form-label fw-bold">Año</label>
+              <input type="number" name="anio" class="form-control" min="1990" max="2025" required>
+            </div>
+
+            <div class="col-md-4">
+              <label class="form-label fw-bold">Color</label>
+              <input type="text" name="color" class="form-control" required>
+            </div>
+            <div class="col-md-4">
+              <label class="form-label fw-bold">Tipo de Vehículo</label>
+              <select name="tipo" class="form-select" required>
+                <option value="">Seleccionar...</option>
+                <option>Compacto</option>
+                <option>Sedán</option>
+                <option>Pick-Up</option>
+                <option>SUV</option>
+                <option>Deportivo</option>
+              </select>
+            </div>
+            <div class="col-md-4">
+              <label class="form-label fw-bold">Transmisión</label>
+              <select name="transmision" class="form-select" required>
+                <option value="">Seleccionar...</option>
+                <option>Manual</option>
+                <option>Automática</option>
+              </select>
+            </div>
+
+            <div class="col-md-4">
+              <label class="form-label fw-bold">Combustible</label>
+              <select name="combustible" class="form-select" required>
+                <option value="">Seleccionar...</option>
+                <option>Gasolina</option>
+                <option>Diesel</option>
+                <option>Híbrido</option>
+                <option>Eléctrico</option>
+              </select>
+            </div>
+            <div class="col-md-4">
+              <label class="form-label fw-bold">Kilometraje</label>
+              <input type="number" name="kilometraje" class="form-control" placeholder="Ej: 50000" required>
+            </div>
+            <div class="col-md-4">
+              <label class="form-label fw-bold">Precio de Compra ($)</label>
+              <input type="number" step="0.01" name="precio_compra" class="form-control" required>
+            </div>
+
+            <div class="col-md-4">
+              <label class="form-label fw-bold">Precio de Venta ($)</label>
+              <input type="number" step="0.01" name="precio" class="form-control" required>
+            </div>
+            <div class="col-md-4">
+              <label class="form-label fw-bold">Nombre del Vendedor</label>
+              <input type="text" name="vendedor_nombre" class="form-control" required>
+            </div>
+            <div class="col-md-4">
+              <label class="form-label fw-bold">DUI del Vendedor</label>
+              <input type="text" name="vendedor_dui" class="form-control" placeholder="Ej: 12345678-9" required>
+            </div>
+
+            <div class="col-md-12">
+              <label class="form-label fw-bold">Imagen del Vehículo</label>
+              <input type="file" name="imagen" class="form-control" accept="image/*" required>
+            </div>
+          </div>
         </div>
-        <div class="modal-body">
-          <div class="mb-3">
-            <input type="text" name="marca" placeholder="Marca" class="form-control" required>
-          </div>
-          <div class="mb-3">
-            <input type="text" name="modelo" placeholder="Modelo" class="form-control" required>
-          </div>
-          <div class="mb-3">
-            <input type="number" name="anio" placeholder="Año" class="form-control" required>
-          </div>
-          <div class="mb-3">
-            <input type="number" name="precio" placeholder="Precio" class="form-control" required>
-          </div>
-          <div class="mb-3">
-            <input type="file" name="imagen" class="form-control" required>
-          </div>
-        </div>
-        <div class="modal-footer">
-          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cerrar</button>
-          <button type="submit" class="btn btn-success">Agregar Vehículo</button>
+
+        <div class="modal-footer bg-light">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+            <i class="bi bi-x-circle"></i> Cancelar
+          </button>
+          <button type="submit" class="btn btn-danger">
+            <i class="bi bi-check-circle"></i> Guardar Vehículo
+          </button>
         </div>
       </form>
     </div>
   </div>
 </div>
 
-<!-- Script de búsqueda -->
+
 <script>
   const searchInput = document.getElementById("searchInput");
-  const table = document.getElementById("vehiculosTable").getElementsByTagName("tbody")[0];
+  const tableRows = document.querySelectorAll("#vehiculosTable tr");
 
-  searchInput.addEventListener("keyup", function() {
-    const filter = searchInput.value.toLowerCase();
-    const rows = table.getElementsByTagName("tr");
-
-    for (let i = 0; i < rows.length; i++) {
-      const marca = rows[i].getElementsByTagName("td")[0].textContent.toLowerCase();
-      const modelo = rows[i].getElementsByTagName("td")[1].textContent.toLowerCase();
-      if (marca.includes(filter) || modelo.includes(filter)) {
-        rows[i].style.display = "";
-      } else {
-        rows[i].style.display = "none";
-      }
-    }
+  searchInput.addEventListener("keyup", () => {
+    const filtro = searchInput.value.toLowerCase();
+    tableRows.forEach(row => {
+      const marca = row.cells[0].textContent.toLowerCase();
+      const modelo = row.cells[1].textContent.toLowerCase();
+      row.style.display = (marca.includes(filtro) || modelo.includes(filtro)) ? "" : "none";
+    });
   });
 </script>
-
 {% endblock %}

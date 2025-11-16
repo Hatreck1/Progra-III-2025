@@ -1,0 +1,191 @@
+{% extends "base.html" %}
+{% block title %}Compra de Carros Local{% endblock %}
+
+{% block content %}
+<section class="container mt-5">
+<h3 class="mb-5 text-center text-uppercase fw-bold" style="color:#E43636;">
+  <i class="bi bi-car-front-fill"></i> Compra de carros local
+</h3>
+
+  <form method="POST" action="{{ url_for('compra_local') }}" id="formCompra" enctype="multipart/form-data" class="card p-4 shadow-lg rounded-4 bg-light">
+    <div class="row mb-3">
+      <div class="col-md-4">
+        <label class="form-label fw-bold">Marca</label>
+        <input type="text" name="marca" class="form-control" required>
+      </div>
+      <div class="col-md-4">
+        <label class="form-label fw-bold">Modelo</label>
+        <input type="text" name="modelo" class="form-control" required>
+      </div>
+      <div class="col-md-4">
+        <label class="form-label fw-bold">Año</label>
+        <input type="number" name="anio" class="form-control" min="1990" max="2025" required>
+      </div>
+    </div>
+
+    <div class="row mb-3">
+      <div class="col-md-4">
+        <label class="form-label fw-bold">Color</label>
+        <input type="text" name="color" class="form-control" required>
+      </div>
+      <div class="col-md-4">
+        <label class="form-label fw-bold">Tipo de Vehículo</label>
+        <select name="tipo" class="form-select" required>
+          <option value="">Seleccionar...</option>
+          <option>Compacto</option>
+          <option>Sedán</option>
+          <option>Pick-Up</option>
+          <option>SUV</option>
+          <option>Deportivo</option>
+        </select>
+      </div>
+      <div class="col-md-4">
+        <label class="form-label fw-bold">Transmisión</label>
+        <select name="transmision" class="form-select" required>
+          <option value="">Seleccionar...</option>
+          <option>Manual</option>
+          <option>Automática</option>
+        </select>
+      </div>
+    </div>
+
+    <div class="row mb-3">
+      <div class="col-md-4">
+        <label class="form-label fw-bold">Combustible</label>
+        <select name="combustible" class="form-select" required>
+          <option value="">Seleccionar...</option>
+          <option>Gasolina</option>
+          <option>Diesel</option>
+          <option>Híbrido</option>
+          <option>Eléctrico</option>
+        </select>
+      </div>
+      <div class="col-md-4">
+        <label class="form-label fw-bold">Kilometraje</label>
+        <input type="number" name="kilometraje" class="form-control" placeholder="Ej: 50000" required>
+      </div>
+      <div class="col-md-4">
+        <label class="form-label fw-bold">Precio de Compra ($)</label>
+        <input type="number" step="0.01" name="precio_compra" class="form-control" required>
+      </div>
+    </div>
+
+    <div class="row mb-3">
+      <div class="col-md-4">
+        <label class="form-label fw-bold">Precio de Venta ($)</label>
+        <input type="number" step="0.01" name="precio" class="form-control" required>
+      </div>
+      <div class="col-md-4">
+        <label class="form-label fw-bold">Nombre del Vendedor</label>
+        <input type="text" name="vendedor_nombre" class="form-control" required>
+      </div>
+      <div class="col-md-4">
+        <label class="form-label fw-bold">DUI del Vendedor</label>
+        <input type="text" name="vendedor_dui" class="form-control" placeholder="Ej: 12345678-9" required>
+      </div>
+    </div>
+
+    <div class="row mb-3">
+      <div class="col-md-12">
+        <label class="form-label fw-bold">Imagen del Vehículo</label>
+        <input type="file" name="imagen" class="form-control" accept="image/*" required>
+      </div>
+    </div>
+
+    <div class="text-center mt-4">
+      <button type="submit" class="btn btn-danger btn-lg px-5">Guardar Registro</button>
+    </div>
+  </form>
+
+  <hr class="my-5">
+
+  <h3 class="text-center mb-4 text-danger fw-bold">📑 Historial de Compras Locales</h3>
+
+  <!-- 🔍 Buscador -->
+  <div class="d-flex justify-content-end mb-3">
+    <input type="text" id="buscador" class="form-control w-50 shadow-sm" placeholder="🔍 Buscar por cualquier campo...">
+  </div>
+
+  <div class="table-responsive">
+    <table id="tablaHistorial" class="table table-striped table-hover align-middle">
+      <thead class="table-dark text-center">
+        <tr>
+          <th>Imagen</th>
+          <th>Marca</th>
+          <th>Modelo</th>
+          <th>Año</th>
+          <th>Color</th>
+          <th>Tipo</th>
+          <th>Precio Compra</th>
+          <th>Precio Venta</th>
+          <th>Vendedor</th>
+          <th>DUI</th>
+          <th>Fecha Compra</th>
+        </tr>
+      </thead>
+      <tbody class="text-center">
+        {% if historial %}
+          {% for c in historial %}
+          <tr>
+            <td>
+              {% if c.imagen %}
+                <img src="{{ url_for('static', filename=c.imagen.split('static/')[-1]) }}" width="80" height="60" class="rounded shadow-sm">
+              {% else %}
+                <span class="text-muted">Sin imagen</span>
+              {% endif %}
+            </td>
+            <td>{{ c.marca }}</td>
+            <td>{{ c.modelo }}</td>
+            <td>{{ c.anio }}</td>
+            <td>{{ c.color }}</td>
+            <td>{{ c.tipo }}</td>
+            <td>${{ "%.2f"|format(c.precio_compra) }}</td>
+            <td>${{ "%.2f"|format(c.precio) }}</td>
+            <td>{{ c.vendedor_nombre }}</td>
+            <td>{{ c.vendedor_dui }}</td>
+            <td>{{ c.fecha_compra.strftime("%d/%m/%Y") if c.fecha_compra else '' }}</td>
+          </tr>
+          {% endfor %}
+        {% else %}
+          <tr><td colspan="11" class="text-center text-muted">Sin registros de compras locales aún.</td></tr>
+        {% endif %}
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<script>
+document.addEventListener("DOMContentLoaded", () => {
+  // Validación del formulario
+  const form = document.getElementById("formCompra");
+  form.addEventListener("submit", e => {
+    const required = [...form.querySelectorAll("[required]")];
+    let valido = true;
+    required.forEach(input => {
+      if (!input.value.trim()) {
+        input.classList.add("is-invalid");
+        valido = false;
+      } else {
+        input.classList.remove("is-invalid");
+      }
+    });
+    if (!valido) {
+      e.preventDefault();
+      alert("⚠️ Complete todos los campos antes de guardar.");
+    }
+  });
+
+  // Buscador dinámico
+  const buscador = document.getElementById("buscador");
+  const filas = document.querySelectorAll("#tablaHistorial tbody tr");
+
+  buscador.addEventListener("input", e => {
+    const texto = e.target.value.toLowerCase();
+    filas.forEach(fila => {
+      const contenido = fila.textContent.toLowerCase();
+      fila.style.display = contenido.includes(texto) ? "" : "none";
+    });
+  });
+});
+</script>
+{% endblock %}

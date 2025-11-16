@@ -1,4 +1,83 @@
 
+
+
+/*Botón cerrar sesión*/
+.btn-logout {
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  width: 45px;
+  height: 45px;
+  border: none;
+  border-radius: 50px;
+  cursor: pointer;
+  position: relative;
+  overflow: hidden;
+  background: linear-gradient(135deg, #f8e79c, #f1d35b);
+  box-shadow: 0 3px 10px rgba(0, 0, 0, 0.15);
+  transition: all 0.4s ease;
+}
+
+.sign {
+  width: 100%;
+  transition: all 0.4s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.sign svg {
+  width: 20px;
+  height: 20px;
+}
+
+.sign svg path {
+  fill: #000000;
+  transition: all 0.4s ease;
+}
+
+.text_logout {
+  position: absolute;
+  right: 0%;
+  width: 0%;
+  opacity: 0;
+  color: #000000;
+  font-size: 0.85em;
+  font-weight: 600;
+  letter-spacing: 0.3px;
+  transition: all 0.4s ease;
+}
+
+/* Hover animation */
+.btn-logout:hover {
+  width: 135px;
+  border-radius: 25px;
+  background: linear-gradient(135deg, #fff3b0, #f6dd70);
+  box-shadow: 0 4px 15px rgba(241, 208, 54, 0.4);
+  transform: translateY(-1px);
+}
+
+.btn-logout:hover .sign {
+  width: 30%;
+  padding-left: 10px;
+}
+
+.btn-logout:hover .text_logout {
+  opacity: 1;
+  width: 70%;
+  padding-right: 10px;
+}
+
+/* Active effect */
+.btn-logout:active {
+  transform: scale(0.97);
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.3);
+}
+
+
+
+/**/
+
 .dashboard-container {
   position: relative;
   min-height: 100vh;
@@ -14,6 +93,7 @@
 
   .dashboard-card {
     background: rgba(255, 247, 247, 0.95);
+    height: 260px;
     border-radius: 20px;
     padding: 20px;
     margin: 15px 0;
@@ -43,14 +123,14 @@
   }
 
   .icon_car{
-    margin: auto 0; 
+    display: flex;
+    margin: 0 auto; 
     height: 60px; width: 60px; 
     background-color: #feebeb; 
     position: relative;
     justify-content: center;
     align-items: center;
     border-radius: 20px;
-    margin: 0 auto;
     margin-bottom: 10px;
   }
 

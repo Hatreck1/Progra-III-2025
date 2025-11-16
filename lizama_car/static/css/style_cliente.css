@@ -1,0 +1,88 @@
+.acciones {
+  display: flex; justify-content: space-between; align-items: center;
+  margin-bottom: 15px; gap: 10px; flex-wrap: wrap;
+}
+/**/
+.btn-nuevo {
+  position: relative;
+  background: linear-gradient(135deg, #00aaff, #0066ff);
+  color: #ffffff;
+  padding: 10px 22px;
+  border: none;
+  border-radius: 10px;
+  cursor: pointer;
+  font-size: 16px;
+  font-weight: 600;
+  letter-spacing: 0.5px;
+  transition: all 0.4s ease;
+  box-shadow: 0 4px 15px rgba(0, 102, 255, 0.3);
+  overflow: hidden;
+}
+
+/* Suave reflejo animado */
+.btn-nuevo::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: -75%;
+  width: 50%;
+  height: 100%;
+  background: linear-gradient(
+    120deg,
+    rgba(255, 255, 255, 0.4),
+    rgba(255, 255, 255, 0)
+  );
+  transform: skewX(-25deg);
+  transition: all 0.4s ease;
+}
+
+/* Hover */
+.btn-nuevo:hover {
+  background: linear-gradient(135deg, #33bbff, #005bff);
+  box-shadow: 0 6px 20px rgba(0, 102, 255, 0.5);
+  transform: translateY(-2px);
+}
+
+/* Efecto de brillo dinámico */
+.btn-nuevo:hover::before {
+  left: 130%;
+  transition: all 0.7s ease;
+}
+
+/* Active (click) */
+.btn-nuevo:active {
+  transform: scale(0.97);
+  box-shadow: 0 3px 10px rgba(0, 102, 255, 0.4);
+}
+
+
+
+
+/**/
+.input-buscar {
+  padding: 10px 14px; font-size: 15px; border: 1px solid #ccc;
+  border-radius: 8px; width: 250px; transition: 0.3s;
+}
+.input-buscar:focus {
+  outline: none; border-color: #007bff;
+  box-shadow: 0 0 5px rgba(0, 123, 255, 0.4);
+}
+table { width: 100%; border-collapse: collapse; margin-top: 10px; }
+th, td {
+  border: 1px solid #ddd; padding: 10px; text-align: left;
+}
+th { background-color: #f9eca3;padding: 14px;
+  text-align: center;
+  letter-spacing: 0.5px;
+  font-size: 0.95rem; }
+td { background-color: #fff; }
+.btn-editar {
+  background-color: #ffc107; color: black; padding: 6px 12px;
+  border: none; border-radius: 6px; cursor: pointer;
+}
+.btn-editar:hover { background-color: #e0a800; }
+.btn-eliminar {
+  background-color: #dc3545; color: white; padding: 6px 12px;
+  border: none; border-radius: 6px; cursor: pointer;
+}
+.btn-eliminar:hover { background-color: #bb2d3b; }

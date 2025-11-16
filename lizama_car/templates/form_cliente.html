@@ -1,0 +1,187 @@
+{% extends "base.html" %}
+
+{% block title %}Registrar Cliente{% endblock %}
+
+{% block content %}
+<section class="contenido mt-5 container">
+  <h2 class="text-center mb-4 fw-bold text-danger">
+    🧾 {% if cliente %}Editar Cliente{% else %}Registro de Cliente{% endif %}
+  </h2>
+
+  <form id="formCliente"
+        action="{% if cliente %}{{ url_for('editar_cliente', id=cliente._id) }}{% else %}{{ url_for('nuevo_cliente') }}{% endif %}"
+        method="POST"
+        class="card p-4 shadow-lg rounded-4 bg-light border-0">
+
+    <!-- Datos personales -->
+    <div class="row mb-3">
+      <div class="col-md-6">
+        <label class="form-label">Nombre Completo</label>
+        <input type="text" name="nombre" class="form-control" value="{{ cliente.nombre if cliente else '' }}" required>
+        <div class="invalid-feedback">Ingrese un nombre válido (mínimo 3 letras).</div>
+      </div>
+      <div class="col-md-3">
+        <label class="form-label">DUI</label>
+        <input type="text" name="dui" class="form-control" placeholder="00000000-0" value="{{ cliente.dui if cliente else '' }}" required>
+        <div class="invalid-feedback">Formato incorrecto. Ej: 12345678-9</div>
+      </div>
+      <div class="col-md-3">
+        <label class="form-label">Teléfono</label>
+        <input type="tel" name="telefono" class="form-control" placeholder="7777-7777" value="{{ cliente.telefono if cliente else '' }}" required>
+        <div class="invalid-feedback">Formato incorrecto. Ej: 7777-7777</div>
+      </div>
+    </div>
+
+    <!-- Contacto -->
+    <div class="row mb-3">
+      <div class="col-md-6">
+        <label class="form-label">Correo Electrónico</label>
+        <input type="email" name="correo" class="form-control" placeholder="ejemplo@correo.com" value="{{ cliente.correo if cliente else '' }}" required>
+        <div class="invalid-feedback">Ingrese un correo válido.</div>
+      </div>
+      <div class="col-md-6">
+        <label class="form-label">Dirección</label>
+        <input type="text" name="direccion" class="form-control" placeholder="Calle, colonia, ciudad" value="{{ cliente.direccion if cliente else '' }}" required>
+        <div class="invalid-feedback">Ingrese una dirección válida.</div>
+      </div>
+    </div>
+
+    <!-- Licencia -->
+    <div class="row mb-3">
+      <div class="col-md-4">
+        <label class="form-label">Número de Licencia</label>
+        <input type="text" name="licencia" class="form-control" value="{{ cliente.licencia if cliente else '' }}" required>
+        <div class="invalid-feedback">Ingrese un número de licencia válido.</div>
+      </div>
+      <div class="col-md-4">
+        <label class="form-label">Tipo de Licencia</label>
+        <select name="tipo_licencia" class="form-select" required>
+          <option value="">Seleccionar...</option>
+          <option value="Particular" {% if cliente and cliente.tipo_licencia == 'Particular' %}selected{% endif %}>Particular</option>
+          <option value="Liviana" {% if cliente and cliente.tipo_licencia == 'Liviana' %}selected{% endif %}>Liviana</option>
+          <option value="Pesada" {% if cliente and cliente.tipo_licencia == 'Pesada' %}selected{% endif %}>Pesada</option>
+          <option value="Motocicleta" {% if cliente and cliente.tipo_licencia == 'Motocicleta' %}selected{% endif %}>Motocicleta</option>
+        </select>
+        <div class="invalid-feedback">Seleccione un tipo de licencia.</div>
+      </div>
+      <div class="col-md-4">
+        <label class="form-label">Fecha de Nacimiento</label>
+        <input type="date" name="fecha_nacimiento" class="form-control" value="{{ cliente.fecha_nacimiento if cliente else '' }}" required>
+        <div class="invalid-feedback">Seleccione una fecha válida.</div>
+      </div>
+    </div>
+
+    <!-- Género -->
+    <div class="row mb-4">
+      <div class="col-md-3">
+        <label class="form-label">Género</label>
+        <select name="genero" class="form-select" required>
+          <option value="">Seleccionar...</option>
+          <option value="Masculino" {% if cliente and cliente.genero == 'Masculino' %}selected{% endif %}>Masculino</option>
+          <option value="Femenino" {% if cliente and cliente.genero == 'Femenino' %}selected{% endif %}>Femenino</option>
+          <option value="Otro" {% if cliente and cliente.genero == 'Otro' %}selected{% endif %}>Otro</option>
+        </select>
+        <div class="invalid-feedback">Seleccione un género.</div>
+      </div>
+    </div>
+
+    <!-- Botón -->
+    <div class="text-center">
+      <button type="submit" class="btn btn-danger btn-lg px-5 shadow-sm">
+        {% if cliente %}Guardar Cambios{% else %}Guardar Cliente{% endif %}
+      </button>
+    </div>
+  </form>
+</section>
+
+<!-- Script de validaciones -->
+<script>
+document.addEventListener("DOMContentLoaded", () => {
+  const form = document.getElementById("formCliente");
+  if (!form) return; // evita errores si el script se carga en otra página
+
+  const regex = {
+    nombre: /^[A-Za-zÁÉÍÓÚáéíóúñÑ\s]{3,50}$/,
+    dui: /^\d{8}-\d$/,
+    telefono: /^\d{4}-\d{4}$/,
+    correo: /^[^@\s]+@[^@\s]+\.[^@\s]+$/,
+    licencia: /^[A-Za-z0-9-]{5,20}$/
+  };
+
+  const inputs = Array.from(form.querySelectorAll("input, select"));
+
+  // Validar en cada input cuando el usuario escribe / cambia
+  inputs.forEach(input => {
+    input.addEventListener("input", () => validarCampo(input));
+    input.addEventListener("change", () => validarCampo(input));
+  });
+
+  // Validar todos los campos con valores (útil en modo editar)
+  inputs.forEach(input => {
+    if (input.value && input.value.trim() !== "") {
+      validarCampo(input);
+    }
+  });
+
+  function validarCampo(input) {
+    const name = input.name;
+    const value = (input.value || "").trim();
+
+    // Campos con expresiones regulares definidas
+    if (name && regex[name]) {
+      if (regex[name].test(value)) {
+        marcarValido(input);
+      } else {
+        marcarInvalido(input);
+      }
+      return;
+    }
+
+    // Fecha y selects: aceptamos cualquier valor no vacío
+    const tag = input.tagName.toLowerCase();
+    if (input.type === "date" || tag === "select") {
+      if (value !== "") marcarValido(input);
+      else marcarInvalido(input);
+      return;
+    }
+
+    // Inputs sin regla: chequear no vacío (por ejemplo dirección)
+    if (input.required) {
+      if (value !== "") marcarValido(input);
+      else marcarInvalido(input);
+    } else {
+      // opcional: si no es requerido, lo dejamos como válido si está vacío
+      if (value === "") {
+        input.classList.remove("is-invalid", "is-valid");
+      } else {
+        marcarValido(input);
+      }
+    }
+  }
+
+  function marcarValido(el) {
+    el.classList.remove("is-invalid");
+    el.classList.add("is-valid");
+  }
+
+  function marcarInvalido(el) {
+    el.classList.add("is-invalid");
+    el.classList.remove("is-valid");
+  }
+
+  form.addEventListener("submit", (e) => {
+    let valido = true;
+    inputs.forEach(input => {
+      validarCampo(input);
+      if (input.classList.contains("is-invalid")) valido = false;
+    });
+
+    if (!valido) {
+      e.preventDefault();
+      alert("⚠️ Por favor, corrija los campos marcados antes de enviar.");
+    }
+  });
+});
+</script>
+
+{% endblock %}
