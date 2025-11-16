@@ -1,6 +1,6 @@
 from flask import Flask, render_template, request, redirect, url_for, session, flash
 from db_nexus import db
-from datetime import datetime
+from datetime import datetime, timedelta
 from bson.objectid import ObjectId
 import bcrypt
 from flask import make_response
@@ -232,7 +232,7 @@ def rentar_vehiculo(id):
             "imagen": vehiculo.get("imagen", ""),
             "cliente_nombre": cliente_nombre,
             "cliente_dui": cliente_dui,
-            "fecha_renta": datetime.utcnow(),
+            "fecha_renta": datetime.utcnow() - timedelta(hours=6),
             "rentado_por": session["user"]
         }
         coleccion_rentas.insert_one(renta)
@@ -408,7 +408,7 @@ def devolver_carro(id):
             "cliente_nombre": renta["cliente_nombre"],
             "cliente_dui": renta["cliente_dui"],
             "fecha_renta": renta["fecha_renta"],
-            "fecha_devolucion": datetime.utcnow(),
+            "fecha_devolucion": datetime.utcnow() - timedelta(hours=6),
             "rentado_por": renta["rentado_por"]
         }
         coleccion_historial.insert_one(historial)
@@ -480,7 +480,7 @@ def rentar_desde_rentados(id):
             "imagen": vehiculo.get("imagen", ""),
             "cliente_nombre": cliente_nombre,
             "cliente_dui": cliente_dui,
-            "fecha_renta": datetime.utcnow(),
+            "fecha_renta": datetime.utcnow() - timedelta(hours=6),
             "rentado_por": session["user"]
         }
         coleccion_rentas.insert_one(renta)
