@@ -1,82 +1,82 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" data-bs-theme="dark">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>CRUD - Academico - Python</title>
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css" 
-       crossorigin="anonymous" referrerpolicy="no-referrer" />
-       <!-- CSS -->
-    <link rel="stylesheet" href="//cdn.jsdelivr.net/npm/alertifyjs@1.14.0/build/css/alertify.min.css"/>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css"
+        crossorigin="anonymous" referrerpolicy="no-referrer" />
+    <!-- CSS -->
+    <link rel="stylesheet" href="//cdn.jsdelivr.net/npm/alertifyjs@1.14.0/build/css/alertify.min.css" />
     <!-- Default theme -->
-    <link rel="stylesheet" href="//cdn.jsdelivr.net/npm/alertifyjs@1.14.0/build/css/themes/default.min.css"/>
+    <link rel="stylesheet" href="//cdn.jsdelivr.net/npm/alertifyjs@1.14.0/build/css/themes/default.min.css" />
     <!-- Semantic UI theme -->
-    <link rel="stylesheet" href="//cdn.jsdelivr.net/npm/alertifyjs@1.14.0/build/css/themes/semantic.min.css"/>
+    <link rel="stylesheet" href="//cdn.jsdelivr.net/npm/alertifyjs@1.14.0/build/css/themes/semantic.min.css" />
     <!-- Bootstrap theme -->
-    <link rel="stylesheet" href="//cdn.jsdelivr.net/npm/alertifyjs@1.14.0/build/css/themes/bootstrap.min.css"/>
+    <link rel="stylesheet" href="//cdn.jsdelivr.net/npm/alertifyjs@1.14.0/build/css/themes/bootstrap.min.css" />
 </head>
+
 <body>
     <nav class="navbar navbar-expand-lg bg-body-tertiary">
         <div class="container-fluid">
             <a class="navbar-brand" href="#">::.. SISTEMA ACADEMICO ..::</a>
             <div class="collapse navbar-collapse" id="mnxAcademica">
                 <div class="navbar-nav">
-                    <a class="nav-link" href="#" data-form="alumnos">Alumnos</a>
-                    <a class="nav-link" href="#" data-form="usuarios">Usuarios</a>
-                    <a class="nav-link" href="#" data-form="materias">Materias</a>
-                    <a class="nav-link" href="#" data-form="docentes">Docentes</a>
-                    <a class="nav-link" href="#" data-form="notas">Notas</a>
+
                 </div>
             </div>
         </div>
     </nav>
     <div class="container-fluid">
-        <div class="position-absolute" id="alumnos"></div>
-        <div class="position-absolute" id="busqueda_alumnos"></div>
-        <div class="position-absolute" id="usuarios"></div>
-        <div class="position-absolute" id="busqueda_usuarios"></div>
-        <div class="position-absolute" id="materias"></div>
-        <div class="position-absolute" id="busqueda_materias"></div>
-        <div class="position-absolute" id="docentes"></div>
-        <div class="position-absolute" id="busqueda_docentes"></div>
-        <div class="position-absolute" id="notas"></div>
-        <div class="position-absolute" id="busqueda_notas"></div>
+        <div class="position-absolute" id="conversor_grados">
+            <div class="card">
+                <div class="card-header">
+                    <h3>Conversor de Grados</h3>
+                </div>
+                <div class="card-body">
+                    <form id="frmConversor">
+                        <div class="mb-3">
+                            <label for="txtGradosCelsius" class="form-label">Celsius</label>
+                            <input type="number" class="form-control" id="txtGradosCelsius" required>
+                        </div>
+                        <div class="mb-3">
+                            <h3><span id="lblGradosFahrenheit" class="badge text-bg-light">Fahrenheit: 0</span></h3>
+                        </div>
+                        <button type="submit" class="btn btn-primary">Convertir</button>
+                    </form>
+                </div>
+            </div>
+        </div>
     </div>
 
-    <script src="https://code.jquery.com/jquery-3.7.1.min.js" integrity="sha256-/JqT3SQfawRcv/BIHPThkBvs0OEvtFFmqPF/lYI/Cxo=" crossorigin="anonymous"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jqueryui/1.14.1/jquery-ui.min.js" integrity="sha512-MSOo1aY+3pXCOCdGAYoBZ6YGI0aragoQsg1mKKBHXCYPIWxamwOE7Drh+N5CPgGI5SA9IEKJiPjdfqWFWmZtRA==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+    <script src="https://code.jquery.com/jquery-3.7.1.min.js"
+        integrity="sha256-/JqT3SQfawRcv/BIHPThkBvs0OEvtFFmqPF/lYI/Cxo=" crossorigin="anonymous"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jqueryui/1.14.1/jquery-ui.min.js"
+        integrity="sha512-MSOo1aY+3pXCOCdGAYoBZ6YGI0aragoQsg1mKKBHXCYPIWxamwOE7Drh+N5CPgGI5SA9IEKJiPjdfqWFWmZtRA=="
+        crossorigin="anonymous" referrerpolicy="no-referrer"></script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js"></script>
     <!-- JavaScript -->
     <script src="//cdn.jsdelivr.net/npm/alertifyjs@1.14.0/build/alertify.min.js"></script>
     <script>
-        document.addEventListener("DOMContentLoaded", event=>{
-            mnxAcademica.addEventListener('click', e=>{
+        document.addEventListener("DOMContentLoaded", event => {
+            frmConversor.addEventListener('submit', async e => {
                 e.preventDefault();
-                
-                let form = e.target.dataset.form;
-                abrirVentana(form);
-            });
+                let datos = {
+                    celsius: txtGradosCelsius.value
+                };
+                let respuesta = await fetch('http://localhost:3000', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(datos)
+                }),
+                    resp = await respuesta.json();
+                lblGradosFahrenheit.innerHTML = `Fahrenheit: ${resp.grados}`;
+            })
         });
-        function abrirVentana(form, callback){
-            if( $(`#${form} > form`).length === 0 ){
-                fetch(`/vistas?form=${form}`)
-                .then(response => response.text())
-                .then(ventana => {
-                    $(`#${form}`).html(ventana).draggable();
-                    cerrarVentana();
-                    if(callback) callback();
-                })
-                .catch(error => console.error('Error al cargar el formulario:', error));
-            }else{
-                $(`#${form}`).show();
-            }
-        }
-        function cerrarVentana(){
-            $('.btn-close').off('click').click(e=>{
-                let form = e.target.dataset.form;
-                $(`#${form}`).hide();
-            });
-        }
     </script>
 </body>
+
 </html>
