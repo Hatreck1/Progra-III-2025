@@ -68,6 +68,8 @@
           <li class="nav-item"><a class="nav-link {% if request.endpoint == 'mostrar_rentados' %}active{% endif %}" href="{{ url_for('mostrar_rentados') }}">Rentados</a></li>
           <li class="nav-item"><a class="nav-link {% if request.endpoint == 'mostrar_historial' %}active{% endif %}" href="{{ url_for('mostrar_historial') }}">Historial de Rentas</a></li>
           <li class="nav-item"><a class="nav-link {% if request.endpoint == 'compra_local' %}active{% endif %}" href="{{ url_for('compra_local') }}">Compra Local</a></li>
+          <li class="nav-item"><a class="nav-link {% if request.endpoint == 'importacion_carros' %}active{% endif %}" href="{{ url_for('importacion_carros') }}">Importación de Carros</a></li>
+
         </ul>
       </div>
 

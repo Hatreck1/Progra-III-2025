@@ -1,0 +1,249 @@
+{% extends "base.html" %}
+{% block title %}Importación de Carros{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+  <h2 class="text-center fw-bold mb-4 text-danger">🚗 Importación de Carros</h2>
+
+  <div class="text-center mt-4">
+    <a href="{{ url_for('historial_importacion') }}" class="btn btn-dark btn-lg rounded-3">
+      📋 Ver todas las importaciones
+    </a>
+  </div>
+
+  <div class="wizard-card mx-auto shadow-lg p-4 rounded-4 bg-white">
+
+    <div class="wizard-progress mb-4">
+      <div class="progress" style="height: 10px;">
+        <div id="wizardProgressBar" class="progress-bar bg-danger" role="progressbar"></div>
+      </div>
+    </div>
+
+    <form method="POST" enctype="multipart/form-data">
+
+      <!-- PASO 1 -->
+      <div class="wizard-step active">
+        <h4 class="fw-bold mb-3">1️⃣ Datos del Vehículo</h4>
+
+        <div class="row">
+          <div class="col-md-6 mb-3">
+            <label>Marca:</label>
+            <input type="text" class="form-control" name="marca" required>
+          </div>
+
+          <div class="col-md-6 mb-3">
+            <label>Modelo:</label>
+            <input type="text" class="form-control" name="modelo" required>
+          </div>
+
+          <div class="col-md-4 mb-3">
+            <label>Año:</label>
+            <input type="number" class="form-control" name="anio">
+          </div>
+
+          <div class="col-md-4 mb-3">
+            <label>Color:</label>
+            <input type="text" class="form-control" name="color">
+          </div>
+
+          <div class="col-md-4 mb-3">
+            <label>Tipo:</label>
+            <select class="form-control" name="tipo">
+              <option>Sedan</option>
+              <option>SUV</option>
+              <option>Pick-up</option>
+              <option>Coupe</option>
+              <option>Hatchback</option>
+            </select>
+          </div>
+
+          <div class="col-md-6 mb-3">
+            <label>Transmisión:</label>
+            <select class="form-control" name="transmision">
+              <option>Automática</option>
+              <option>Manual</option>
+            </select>
+          </div>
+
+          <div class="col-md-6 mb-3">
+            <label>Combustible:</label>
+            <select class="form-control" name="combustible">
+              <option>Gasolina</option>
+              <option>Diésel</option>
+              <option>Híbrido</option>
+              <option>Eléctrico</option>
+            </select>
+          </div>
+
+          <div class="col-md-4 mb-3">
+            <label>Kilometraje:</label>
+            <input type="number" class="form-control" name="kilometraje">
+          </div>
+
+          <div class="col-md-4 mb-3">
+            <label>Precio compra:</label>
+            <input type="number" step="0.01" class="form-control" name="precio_compra">
+          </div>
+
+          <div class="col-md-4 mb-3">
+            <label>Precio venta:</label>
+            <input type="number" step="0.01" class="form-control" name="precio_venta">
+          </div>
+
+        </div>
+
+        <button type="button" class="btn btn-danger float-end next-btn">Siguiente →</button>
+      </div>
+
+      <!-- PASO 2 -->
+      <div class="wizard-step">
+        <h4 class="fw-bold mb-3">2️⃣ Datos de Importación</h4>
+
+        <div class="row">
+
+          <div class="col-md-6 mb-3">
+            <label>País de origen:</label>
+            <input type="text" class="form-control" name="pais_origen">
+          </div>
+
+          <div class="col-md-6 mb-3">
+            <label>Naviera:</label>
+            <input type="text" class="form-control" name="naviera">
+          </div>
+
+          <div class="col-md-6 mb-3">
+            <label>Puerto salida:</label>
+            <input type="text" class="form-control" name="puerto_salida">
+          </div>
+
+          <div class="col-md-6 mb-3">
+            <label>Puerto llegada:</label>
+            <input type="text" class="form-control" name="puerto_llegada">
+          </div>
+
+          <div class="col-md-6 mb-3">
+            <label>N° contenedor:</label>
+            <input type="text" class="form-control" name="num_contenedor">
+          </div>
+
+          <div class="col-md-6 mb-3">
+            <label>N° booking:</label>
+            <input type="text" class="form-control" name="num_booking">
+          </div>
+
+          <div class="col-md-6 mb-3">
+            <label>Fecha salida:</label>
+            <input type="date" class="form-control" name="fecha_salida">
+          </div>
+
+          <div class="col-md-6 mb-3">
+            <label>Fecha llegada:</label>
+            <input type="date" class="form-control" name="fecha_llegada">
+          </div>
+
+          <div class="col-md-6 mb-3">
+            <label>Fecha retiro aduana:</label>
+            <input type="date" class="form-control" name="fecha_retiro_aduana">
+          </div>
+
+        </div>
+
+        <button type="button" class="btn btn-secondary prev-btn">← Anterior</button>
+        <button type="button" class="btn btn-danger float-end next-btn">Siguiente →</button>
+      </div>
+
+      <!-- PASO 3 -->
+      <div class="wizard-step">
+        <h4 class="fw-bold mb-3">3️⃣ Costos + Documentos</h4>
+
+        <div class="row">
+
+          <div class="col-md-6 mb-3">
+            <label>Costo flete:</label>
+            <input type="number" step="0.01" class="form-control" name="costo_flete">
+          </div>
+
+          <div class="col-md-6 mb-3">
+            <label>Costo aduana:</label>
+            <input type="number" step="0.01" class="form-control" name="costo_aduana">
+          </div>
+
+          <div class="col-md-6 mb-3">
+            <label>Costo inspección:</label>
+            <input type="number" step="0.01" class="form-control" name="costo_inspeccion">
+          </div>
+
+          <div class="col-md-6 mb-3">
+            <label>Impuestos pagados:</label>
+            <input type="number" step="0.01" class="form-control" name="impuestos_pagados">
+          </div>
+
+          <div class="col-md-6 mb-3">
+            <label>Transportista local:</label>
+            <input type="text" class="form-control" name="transportista_local">
+          </div>
+
+          <div class="col-md-6 mb-3">
+            <label>Agencia aduanal:</label>
+            <input type="text" class="form-control" name="agencia_aduanal">
+          </div>
+
+          <div class="col-md-6 mb-3">
+            <label>Vendedor:</label>
+            <input type="text" class="form-control" name="vendedor_nombre">
+          </div>
+
+          <div class="col-md-6 mb-3">
+            <label>Documento vendedor:</label>
+            <input type="text" class="form-control" name="vendedor_doc">
+          </div>
+
+          <div class="col-md-12 mb-3">
+            <label>Imagen del vehículo:</label>
+            <input type="file" class="form-control" name="imagen">
+          </div>
+
+        </div>
+
+        <button type="button" class="btn btn-secondary prev-btn">← Anterior</button>
+        <button type="submit" class="btn btn-success float-end">Guardar Importación ✔</button>
+      </div>
+
+    </form>
+  </div>
+</div>
+
+<style>
+  .wizard-card { max-width: 850px; }
+  .wizard-step { display: none; opacity: 0; transform: translateX(40px); transition: .3s ease; }
+  .wizard-step.active { display: block; opacity: 1; transform: translateX(0); }
+</style>
+
+<script>
+let paso = 0;
+const steps = document.querySelectorAll(".wizard-step");
+const progress = document.getElementById("wizardProgressBar");
+
+function updateWizard() {
+  steps.forEach((s, i) => s.classList.toggle("active", i === paso));
+  progress.style.width = ((paso + 1) / steps.length * 100) + "%";
+}
+
+document.querySelectorAll(".next-btn").forEach(btn => {
+  btn.addEventListener("click", () => {
+    if (paso < steps.length - 1) paso++;
+    updateWizard();
+  });
+});
+
+document.querySelectorAll(".prev-btn").forEach(btn => {
+  btn.addEventListener("click", () => {
+    if (paso > 0) paso--;
+    updateWizard();
+  });
+});
+
+updateWizard();
+</script>
+
+{% endblock %}

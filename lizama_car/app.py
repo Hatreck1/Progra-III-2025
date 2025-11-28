@@ -377,6 +377,156 @@ def compra_local():
 
     return render_template("compra_local.html", historial=historial_compras)
 
+# ==================== IMPORTACIÓN historial ====================
+@app.route("/historial_importacion")
+@login_required
+def historial_importacion():
+    historial = list(db["Importacion_carros"].find().sort("fecha_registro", -1))
+
+    # normalizar fechas
+    for item in historial:
+        if isinstance(item.get("fecha_llegada"), str):
+            try:
+                item["fecha_llegada"] = datetime.fromisoformat(item["fecha_llegada"])
+            except:
+                pass
+
+    return render_template("historial_importacion.html", historial=historial)
+
+@app.route("/importacion_carros", methods=["GET", "POST"])
+@login_required
+def importacion_carros():
+    coleccion_import = db["Importacion_carros"]
+    coleccion_vehiculos = db["Vehiculos"]
+
+    if request.method == "POST":
+
+        marca = request.form.get("marca")
+        modelo = request.form.get("modelo")
+        anio = int(request.form.get("anio") or 0)
+        color = request.form.get("color")
+        tipo = request.form.get("tipo")
+        transmision = request.form.get("transmision")
+        combustible = request.form.get("combustible")
+        kilometraje = request.form.get("kilometraje")
+        precio_compra = float(request.form.get("precio_compra") or 0)
+        precio_venta = float(request.form.get("precio_venta") or 0)
+
+        pais_origen = request.form.get("pais_origen")
+        puerto_salida = request.form.get("puerto_salida")
+        puerto_llegada = request.form.get("puerto_llegada")
+        naviera = request.form.get("naviera")
+        num_contenedor = request.form.get("num_contenedor")
+        num_booking = request.form.get("num_booking")
+
+        def parse_date(d):
+            try:
+                return datetime.strptime(d, "%Y-%m-%d")
+            except:
+                return None
+
+        fecha_salida = parse_date(request.form.get("fecha_salida"))
+        fecha_llegada = parse_date(request.form.get("fecha_llegada"))
+        fecha_retiro_aduana = parse_date(request.form.get("fecha_retiro_aduana"))
+
+        costo_flete = float(request.form.get("costo_flete") or 0)
+        costo_aduana = float(request.form.get("costo_aduana") or 0)
+        costo_inspeccion = float(request.form.get("costo_inspeccion") or 0)
+        impuestos_pagados = float(request.form.get("impuestos_pagados") or 0)
+        transportista_local = request.form.get("transportista_local")
+        agencia_aduanal = request.form.get("agencia_aduanal")
+
+        vendedor_nombre = request.form.get("vendedor_nombre")
+        vendedor_doc = request.form.get("vendedor_doc")
+
+        imagen = request.files.get("imagen")
+        ruta_imagen = None
+        if imagen and imagen.filename != "":
+            ruta_imagen = f"static/{imagen.filename}"
+            imagen.save(ruta_imagen)
+
+        vehiculo = {
+            "marca": marca,
+            "modelo": modelo,
+            "anio": anio,
+            "color": color,
+            "tipo": tipo,
+            "transmision": transmision,
+            "combustible": combustible,
+            "kilometraje": kilometraje,
+            "precio_compra": precio_compra,
+            "precio": precio_venta,   
+
+            "imagen": ruta_imagen,
+            "fecha_compra": datetime.utcnow(),
+            "registrado_por": session.get("user"),
+            "importado": True,
+            "info_importacion": {
+                "pais_origen": pais_origen,
+                "puerto_salida": puerto_salida,
+                "puerto_llegada": puerto_llegada,
+                "naviera": naviera,
+                "num_contenedor": num_contenedor,
+                "num_booking": num_booking,
+                "fecha_salida": fecha_salida,
+                "fecha_llegada": fecha_llegada,
+                "fecha_retiro_aduana": fecha_retiro_aduana,
+                "costo_flete": costo_flete,
+                "costo_aduana": costo_aduana,
+                "costo_inspeccion": costo_inspeccion,
+                "impuestos_pagados": impuestos_pagados,
+                "transportista_local": transportista_local,
+                "agencia_aduanal": agencia_aduanal,
+                "vendedor_nombre": vendedor_nombre,
+                "vendedor_doc": vendedor_doc
+            }
+        }
+
+        vehiculo_res = coleccion_vehiculos.insert_one(vehiculo)
+
+        registro_import = {
+            "vehiculo_id": vehiculo_res.inserted_id,
+            "marca": marca,
+            "modelo": modelo,
+            "anio": anio,
+            "color": color,
+            "tipo": tipo,
+            "transmision": transmision,
+            "combustible": combustible,
+            "kilometraje": kilometraje,
+            "precio_compra": precio_compra,
+            "precio_venta": precio_venta,
+            "imagen": ruta_imagen,
+            "pais_origen": pais_origen,
+            "puerto_salida": puerto_salida,
+            "puerto_llegada": puerto_llegada,
+            "naviera": naviera,
+            "num_contenedor": num_contenedor,
+            "num_booking": num_booking,
+            "fecha_salida": fecha_salida,
+            "fecha_llegada": fecha_llegada,
+            "fecha_retiro_aduana": fecha_retiro_aduana,
+            "costo_flete": costo_flete,
+            "costo_aduana": costo_aduana,
+            "costo_inspeccion": costo_inspeccion,
+            "impuestos_pagados": impuestos_pagados,
+            "transportista_local": transportista_local,
+            "agencia_aduanal": agencia_aduanal,
+            "vendedor_nombre": vendedor_nombre,
+            "vendedor_doc": vendedor_doc,
+            "registrado_por": session.get("user"),
+            "fecha_registro": datetime.utcnow()
+        }
+
+        coleccion_import.insert_one(registro_import)
+
+        flash("✔ Importación registrada correctamente.", "success")
+        return redirect(url_for("importacion_carros"))
+
+    historial = list(coleccion_import.find().sort("fecha_registro", -1))
+    return render_template("importacion_carros.html", historial=historial)
+
+
 # ==================== RENTADOS ====================
 @app.route("/rentados")
 @login_required

@@ -1,0 +1,140 @@
+{% extends "base.html" %}
+{% block title %}Historial de Importaciones{% endblock %}
+
+{% block content %}
+
+<div class="container mt-4">
+
+  <h2 class="fw-bold text-danger text-center mb-4">
+    📋 Historial Completo de Importaciones
+  </h2>
+
+  <a href="{{ url_for('importacion_carros') }}" class="btn btn-secondary mb-3">
+    ← Regresar al formulario de importación
+  </a>
+
+  {% if historial|length == 0 %}
+      <div class="alert alert-info text-center rounded-3">
+        No hay importaciones registradas todavía.
+      </div>
+  {% else %}
+
+  <div class="table-responsive shadow rounded-4">
+    <table class="table table-striped table-hover align-middle text-center">
+      <thead class="table-dark">
+        <tr>
+          <th>Imagen</th>
+          <th>Marca</th>
+          <th>Modelo</th>
+          <th>Año</th>
+          <th>Color</th>
+          <th>Tipo</th>
+          <th>Transmisión</th>
+          <th>Combustible</th>
+          <th>Kilometraje</th>
+          <th>Precio Compra</th>
+          <th>Precio Venta</th>
+
+          <th>País Origen</th>
+          <th>Puerto Salida</th>
+          <th>Puerto Llegada</th>
+          <th>Naviera</th>
+          <th>Contenedor</th>
+          <th>Booking</th>
+
+          <th>Fecha Salida</th>
+          <th>Fecha Llegada</th>
+          <th>Retiro Aduana</th>
+
+          <th>Costo Flete</th>
+          <th>Costo Aduana</th>
+          <th>Inspección</th>
+          <th>Impuestos</th>
+          <th>Transportista Local</th>
+
+          <th>Vendedor</th>
+          <th>Documento Vendedor</th>
+
+          <th>Registrado Por</th>
+        </tr>
+      </thead>
+
+      <tbody>
+      {% for i in historial %}
+        <tr>
+          <td>
+            {% if i.imagen %}
+            <img src="/{{ i.imagen }}" width="80" class="rounded shadow-sm">
+            {% else %}
+            <span class="text-muted">Sin imagen</span>
+            {% endif %}
+          </td>
+
+          <td>{{ i.marca }}</td>
+          <td>{{ i.modelo }}</td>
+          <td>{{ i.anio }}</td>
+          <td>{{ i.color }}</td>
+          <td>{{ i.tipo }}</td>
+          <td>{{ i.transmision }}</td>
+          <td>{{ i.combustible }}</td>
+          <td>{{ i.kilometraje }}</td>
+          <td>$ {{ "%.2f"|format(i.precio_compra or 0) }}</td>
+          <td>$ {{ "%.2f"|format(i.precio_venta or 0) }}</td>
+
+          <td>{{ i.pais_origen }}</td>
+          <td>{{ i.puerto_salida }}</td>
+          <td>{{ i.puerto_llegada }}</td>
+          <td>{{ i.naviera }}</td>
+          <td>{{ i.num_contenedor }}</td>
+          <td>{{ i.num_booking }}</td>
+
+          <td>
+            {% if i.fecha_salida %}
+              {{ i.fecha_salida.strftime("%d/%m/%Y") }}
+            {% else %}-{% endif %}
+          </td>
+
+          <td>
+            {% if i.fecha_llegada %}
+              {{ i.fecha_llegada.strftime("%d/%m/%Y") }}
+            {% else %}-{% endif %}
+          </td>
+
+          <td>
+            {% if i.fecha_retiro_aduana %}
+              {{ i.fecha_retiro_aduana.strftime("%d/%m/%Y") }}
+            {% else %}-{% endif %}
+          </td>
+
+          <td>$ {{ "%.2f"|format(i.costo_flete or 0) }}</td>
+          <td>$ {{ "%.2f"|format(i.costo_aduana or 0) }}</td>
+          <td>$ {{ "%.2f"|format(i.costo_inspeccion or 0) }}</td>
+          <td>$ {{ "%.2f"|format(i.impuestos_pagados or 0) }}</td>
+          <td>{{ i.transportista_local }}</td>
+
+          <td>{{ i.vendedor_nombre }}</td>
+          <td>{{ i.vendedor_doc }}</td>
+
+          <td>{{ i.registrado_por }}</td>
+
+        </tr>
+      {% endfor %}
+      </tbody>
+
+    </table>
+  </div>
+
+  {% endif %}
+
+</div>
+
+<style>
+  table img {
+    border-radius: 10px;
+  }
+  table tbody tr:hover {
+    background: #f8f9fa;
+  }
+</style>
+
+{% endblock %}
