@@ -647,7 +647,141 @@ def rentar_desde_rentados(id):
 
     return redirect(url_for("mostrar_rentados"))
 
+# ===============================================
+# 🧠 Asistente Automotriz con DeepSeek (Python STREAM)
+# ===============================================
 
+from flask import request, jsonify, Response
+import requests
+import json
+
+@app.route("/deepseek", methods=["POST"])
+def deepseek_api():
+
+    if request.method == "OPTIONS":
+        return ("", 200)
+
+    if request.method != "POST":
+        return jsonify({"error": "Método no permitido. Usa POST."}), 405
+
+    data = request.get_json(silent=True)
+    if not data:
+        return jsonify({"error": "No se recibieron datos válidos."})
+
+    # ========= MODO CHAT =========
+    consulta = data.get("consulta", "")
+    modo = data.get("modo", "")
+
+    if modo == "autos" and consulta.strip() != "":
+        prompt = f"""
+Eres un asesor de ventas en Lizama Car para ayudar a clientes con sus consultas para compra de autos en El Salvador.
+
+Consulta del cliente:
+{consulta}
+
+Da una respuesta organizada, útil y breve.
+"""
+    else:
+        # ========= FORMULARIO COMPLETO =========
+        nombre_cliente  = data.get("nombre", "Cliente")
+        vehiculo        = data.get("vehiculo", "No especificado")
+        modelo          = data.get("modelo", "")
+        anio            = data.get("anio", "")
+        kilometraje     = data.get("kilometraje", "")
+        fallas          = data.get("fallas", "")
+        sonidos         = data.get("sonidos", "")
+        luces_tablero   = data.get("luces", "")
+        mantenimiento   = data.get("mantenimiento", "")
+        ultima_rev      = data.get("ultima_revision", "")
+        descripcion     = data.get("descripcion", "")
+
+        prompt = f"""
+Eres un experto automotriz completo: mecánico profesional y asesor de ventas de vehículos.
+Responde de forma clara, organizada y útil para un cliente en El Salvador.
+
+📌 Datos del cliente:
+- Nombre: {nombre_cliente}
+- Vehículo: {vehiculo}
+- Modelo: {modelo}
+- Año: {anio}
+- Kilometraje: {kilometraje}
+- Última revisión: {ultima_rev}
+
+🔧 Información reportada:
+- Fallas: {fallas}
+- Sonidos: {sonidos}
+- Luces en tablero: {luces_tablero}
+- Descripción: {descripcion}
+
+🔍 Solicitud del cliente:
+{mantenimiento}
+
+Incluye:
+1. Diagnóstico probable (breve y directo)
+2. Causas frecuentes
+3. Qué revisar primero
+4. Reparaciones sugeridas
+5. Repuestos recomendados y económicos
+6. Riesgos si NO se repara
+7. Costo aproximado en dólares
+8. Tiempo estimado en taller
+9. Recomendaciones de uso o prevención
+10. Si aplica, recomendaciones de carros según presupuesto
+"""
+
+    # ========= API KEY =========
+    api_key = "sk-0506c409f0bf451f9a94aa4459068056"
+
+    payload = {
+        "model": "deepseek-chat",
+        "temperature": 0.6,
+        "max_tokens": 800,
+        "stream": True,
+        "messages": [
+            {
+                "role": "system",
+                "content": "Eres un mecánico automotriz certificado y asesor profesional de compra de vehículos. Responde corto, claro y directo."
+            },
+            {"role": "user", "content": prompt}
+        ]
+    }
+
+    # ========= FUNCIÓN STREAM =========
+    def generar():
+        try:
+            with requests.post(
+                "https://api.deepseek.com/v1/chat/completions",
+                headers={
+                    "Content-Type": "application/json",
+                    "Authorization": f"Bearer {api_key}"
+                },
+                json=payload,
+                stream=True,
+                timeout=50
+            ) as r:
+
+                for linea in r.iter_lines():
+                    if not linea:
+                        continue
+
+                    data_raw = linea.decode("utf-8")
+
+                    if not data_raw.startswith("data:"):
+                        continue
+
+                    try:
+                        json_data = json.loads(data_raw.replace("data: ", ""))
+                        delta = json_data["choices"][0]["delta"].get("content", "")
+                        if delta:
+                            yield delta
+                    except:
+                        pass
+
+        except Exception as e:
+            yield f"[ERROR STREAM] {str(e)}"
+
+    # ========= RESPUESTA EN STREAM =========
+    return Response(generar(), mimetype="text/plain")
 
 # ==================== RUN ====================
 if __name__ == "__main__":

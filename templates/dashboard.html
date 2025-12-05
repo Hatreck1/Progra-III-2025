@@ -142,4 +142,107 @@
     </div>
   </div>
 </div>
+
+<!-- ========== BOTÓN FLOTANTE DEL CHATBOT ========== -->
+<button class="chatbot-btn" id="openChatbot"></button>
+
+<!-- ========== MODAL DEL CHATBOT ========== -->
+<div class="modal fade" id="chatbotModal" tabindex="-1">
+  <div class="modal-dialog modal-dialog-end modal-dialog-scrollable">
+    <div class="modal-content chatbot-modal">
+
+      <div class="modal-header">
+        <h5 class="modal-title">Asistente Lizama Car 🤖</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+
+      <div class="modal-body">
+        <div id="chatMessages" class="chat-messages">
+          <!-- Aquí se agregarán los mensajes -->
+        </div>
+      </div>
+
+      <div class="modal-footer">
+        <div class="input-group">
+          <input type="text" id="chatInput" class="form-control" placeholder="Escribe un mensaje...">
+          <button class="btn btn-danger" id="sendMsg">Enviar</button>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<script>
+document.getElementById("openChatbot").addEventListener("click", function () {
+    let modal = new bootstrap.Modal(document.getElementById("chatbotModal"));
+    modal.show();
+});
+
+// ======================
+// ENVIAR MENSAJE
+// ======================
+document.getElementById("sendMsg").addEventListener("click", sendMessage);
+document.getElementById("chatInput").addEventListener("keypress", function (e) {
+    if (e.key === "Enter") sendMessage();
+});
+
+async function sendMessage() {
+    let input = document.getElementById("chatInput");
+    let text = input.value.trim();
+    if (!text) return;
+
+    let chatBox = document.getElementById("chatMessages");
+
+    // Mensaje del usuario
+    chatBox.innerHTML += `<div class="msg-user"><strong>Tú:</strong> ${text}</div>`;
+
+    // Contenedor del mensaje del bot
+    let loadingId = "msg_" + Date.now();
+    chatBox.innerHTML += `<div class="msg-bot" id="${loadingId}"><strong>LizamaCar:</strong> <span></span></div>`;
+
+    chatBox.scrollTop = chatBox.scrollHeight;
+    input.value = "";
+
+    // ============================
+    // PETICIÓN STREAMING A /deepseek
+    // ============================
+    try {
+        const response = await fetch("/deepseek", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+                consulta: text,
+                modo: "autos"
+            })
+        });
+
+        const reader = response.body.getReader();
+        const decoder = new TextDecoder();
+
+        let botSpan = document.querySelector(`#${loadingId} span`);
+        let finalText = "";
+
+        while (true) {
+            const { value, done } = await reader.read();
+            if (done) break;
+
+            const chunk = decoder.decode(value, { stream: true });
+            finalText += chunk;
+
+            botSpan.textContent = finalText;
+            chatBox.scrollTop = chatBox.scrollHeight;
+        }
+
+    } catch (error) {
+        document.getElementById(loadingId).innerHTML = "❌ Error al conectar al servidor.";
+    }
+}
+
+document.getElementById("chatbotModal").addEventListener("hidden.bs.modal", function () {
+    document.getElementById("chatMessages").innerHTML = "";
+    document.getElementById("chatInput").value = "";
+});
+
+</script>
 {% endblock %}
